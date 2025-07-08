@@ -1,5 +1,8 @@
 import httpx
+from typing import List, Optional
+
 from core.logger import logger
+from models.discord import UserInfo, GuildInfo
 
 
 class DiscordUser:
@@ -13,21 +16,19 @@ class DiscordUser:
             base_url=self.BASE_URL, headers={"Authorization": f"Bearer {self.token}"}
         )
 
-    async def fetch_user(self) -> dict | None:
+    async def fetch_user(self) -> Optional[UserInfo]:
         try:
             response = await self.client.get("/users/@me")
             if response.status_code == 200:
                 data = response.json()
-                user_id = data["id"]
-                avatar_hash = data.get("avatar")
-                return {
-                    "username": data.get("username"),
-                    "avatar": (
-                        f"{self.CDN_URL}/avatars/{user_id}/{avatar_hash}.png"
-                        if avatar_hash
+                return UserInfo(
+                    username=data["username"],
+                    avatar=(
+                        f"{self.CDN_URL}/avatars/{data["id"]}/{data["avatar"]}.png"
+                        if data.get("avatar")
                         else None
                     ),
-                }
+                )
             logger.warning(
                 f"[DISCORD] Failed to fetch user: {response.status_code} - {response.text}"
             )
@@ -35,21 +36,21 @@ class DiscordUser:
             logger.error(f"[DISCORD] Request error (user): {e}")
         return None
 
-    async def fetch_manageable_guilds(self) -> list[dict]:
+    async def fetch_manageable_guilds(self) -> List[GuildInfo]:
         try:
             response = await self.client.get("/users/@me/guilds")
             if response.status_code == 200:
                 guilds = response.json()
                 return [
-                    {
-                        "id": guild["id"],
-                        "name": guild["name"],
-                        "avatar": (
+                    GuildInfo(
+                        id=guild["id"],
+                        name=guild["name"],
+                        icon=(
                             f"{self.CDN_URL}/icons/{guild["id"]}/{guild["icon"]}.png"
-                            if guild["icon"]
+                            if guild.get("icon")
                             else None
                         ),
-                    }
+                    )
                     for guild in guilds
                     if int(guild.get("permissions", 0)) & self.MANAGE_GUILD
                 ]

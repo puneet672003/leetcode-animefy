@@ -17,38 +17,34 @@ class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         header = request.headers.get(self.header_name)
         session_id = request.cookies.get(self.cookie_name)
-        logger.info(f"[AUTH] Processing request: {request.method} {request.url.path}")
-
         session_data = (
             await SessionManager.get_session(session_id) if session_id else None
         )
 
         if session_data:
-            logger.info(f"[AUTH] Found existing session: {session_id}")
             self._set_auth(request, session_id, session_data)
+            logger.info(f"[AUTH] Found existing session: {session_id}")
+
         elif header and header.startswith("Bearer "):
             token = header.split(" ")[1]
-            logger.info(f"[AUTH] Processing Bearer token: {token[:10]}...")
             discord_gateway = DiscordUser(token)
+
             user = await discord_gateway.fetch_user()
             guilds = await discord_gateway.fetch_manageable_guilds()
-
-            print(guilds)
-
             if user:
-                logger.info(f"[AUTH] User authenticated: {user}")
                 session_data = SessionData(
                     user=user,
+                    guilds=guilds,
                     token={"access_token": token, "ex": 3600},
                 )
                 session_id = await SessionManager.create_session(session_data, ex=3600)
-                logger.info(f"[AUTH] Created new session: {session_id}")
                 self._set_auth(request, session_id, session_data)
+
+                logger.info(f"[AUTH] Created new session: {session_id}")
             else:
-                logger.warning(f"[AUTH] Invalid token: {token[:10]}...")
                 self._set_unauth(request)
+                logger.warning(f"[AUTH] Invalid token: {token[:10]}...")
         else:
-            logger.info("[AUTH] No auth header or session - setting unauthenticated")
             self._set_unauth(request)
 
         response = await call_next(request)
@@ -58,7 +54,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
             and not request.cookies.get(self.cookie_name)
             and getattr(request.state, "is_authenticated", False)
         ):
-            logger.info(f"[AUTH] Setting session cookie: {session_id}")
             response.set_cookie(
                 key=self.cookie_name,
                 value=session_id,
@@ -72,13 +67,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
     def _set_auth(self, request: HTTPConnection, session_id: str, data: SessionData):
         request.state.session_id = session_id
         request.state.session_data = data
-        request.state.discord_gateway = DiscordUser(data.token.access_token)
 
         request.state.is_authenticated = True
 
     def _set_unauth(self, request: HTTPConnection):
         request.state.session_id = None
         request.state.session_data = None
-        request.state.discord_gateway = None
 
         request.state.is_authenticated = False

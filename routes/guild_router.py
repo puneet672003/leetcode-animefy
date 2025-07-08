@@ -1,18 +1,22 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
 from services import guild_service
-from models.guild import CreateGuildImput, UpdateGuildInput, UpdateGuildUserInput
+from middlewares.guild_dependency import verify_guild_access
+from models.guild import UpdateGuildInput, UpdateGuildUserInput
 
 guild_router = APIRouter()
 
 
-@guild_router.post("/")
-async def create_guild(data: CreateGuildImput):
-    return await guild_service.add_guild(data.guild_id)
+@guild_router.post("/{guild_id}")
+async def create_guild(guild_id: str = Depends(verify_guild_access)):
+    if not guild_id.isdigit():
+        raise HTTPException(status_code=400, detail="guild_id must be a number string")
+
+    return await guild_service.add_guild(guild_id)
 
 
 @guild_router.get("/{guild_id}")
-async def read_guild(guild_id: str):
+async def read_guild(guild_id: str = Depends(verify_guild_access)):
     if not guild_id.isdigit():
         raise HTTPException(status_code=400, detail="guild_id must be a number string")
 
@@ -20,7 +24,9 @@ async def read_guild(guild_id: str):
 
 
 @guild_router.post("/{guild_id}/channel")
-async def update_channel(guild_id: str, data: UpdateGuildInput):
+async def update_channel(
+    data: UpdateGuildInput, guild_id: str = Depends(verify_guild_access)
+):
     if not guild_id.isdigit():
         raise HTTPException(status_code=400, detail="guild_id must be a number string")
 
@@ -28,7 +34,9 @@ async def update_channel(guild_id: str, data: UpdateGuildInput):
 
 
 @guild_router.post("/{guild_id}/user")
-async def update_guild_user(guild_id: str, data: UpdateGuildUserInput):
+async def update_guild_user(
+    data: UpdateGuildUserInput, guild_id: str = Depends(verify_guild_access)
+):
     if not guild_id.isdigit():
         raise HTTPException(status_code=400, detail="guild_id must be a number string")
 

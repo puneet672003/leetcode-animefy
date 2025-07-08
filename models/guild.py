@@ -15,16 +15,6 @@ class GuildData(BaseModel):
         arbitrary_types_allowed = True
 
 
-class CreateGuildImput(BaseModel):
-    guild_id: str
-
-    @field_validator("guild_id")
-    def number_string(cls, v: str):
-        if not v.isdigit():
-            raise ValueError("guild_id must be a number string")
-        return v
-
-
 class UpdateGuildInput(BaseModel):
     channel_id: str
 

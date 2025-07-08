@@ -1,10 +1,7 @@
-from typing import Optional
-from pydantic import BaseModel
+from typing import List
+from pydantic import BaseModel, Field
 
-
-class User(BaseModel):
-    username: str
-    avatar: Optional[str] = None
+from models.discord import UserInfo, GuildInfo
 
 
 class TokenData(BaseModel):
@@ -13,5 +10,6 @@ class TokenData(BaseModel):
 
 
 class SessionData(BaseModel):
-    user: User
+    user: UserInfo
     token: TokenData
+    guilds: List[GuildInfo] = Field(default_factory=list)

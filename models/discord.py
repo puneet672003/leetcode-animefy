@@ -2,6 +2,11 @@ from typing import Optional
 from pydantic import BaseModel
 
 
+class UserInfo(BaseModel):
+    username: str
+    avatar: Optional[str] = None
+
+
 class WebhookInfo(BaseModel):
     id: str
     name: str
@@ -16,7 +21,7 @@ class ChannelInfo(BaseModel):
 class GuildInfo(BaseModel):
     id: str
     name: str
-    icon: str
+    icon: Optional[str] = None
 
 
 class DiscordClientException(Exception):
