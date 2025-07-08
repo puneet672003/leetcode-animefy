@@ -66,32 +66,66 @@ Once a session is created, the API will automatically use the `session_id` cooki
 - **Auto-renewal**: Sessions are automatically refreshed on valid requests
 
 ### Discord OAuth Setup
-To get a Discord OAuth token for testing:
-1. Create a Discord application at https://discord.com/developers/applications
-2. Configure OAuth2 redirect URIs
-3. Use the authorization URL with scopes `identify` and `guilds`:
+To get a Discord OAuth token:
+
+1. **Create a Discord application** at https://discord.com/developers/applications
+2. **Configure OAuth2 redirect URIs** in your Discord application settings
+3. **Direct your users to the authorization URL**:
    ```
-   https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code&scope=identify%20guilds
+   https://discord.com/oauth2/authorize?client_id=<CLIENT_ID>&response_type=token&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2F&scope=identify+guilds
    ```
-4. Exchange the authorization code for an access token
-5. Use the access token in the Authorization header
+   
+   Replace `<CLIENT_ID>` with your Discord application's client ID.
+
+4. **Frontend token extraction**: After user authorization, Discord redirects to your redirect URI with the access token in the URL fragment:
+   ```
+   http://localhost:8000/#access_token=<ACCESS_TOKEN>&token_type=Bearer&expires_in=604800&scope=identify+guilds
+   ```
+   
+5. **Extract the token**: Frontend JavaScript should read the access token from the URL fragment:
+   ```javascript
+   // Extract access token from URL fragment
+   const fragment = window.location.hash.substring(1);
+   const params = new URLSearchParams(fragment);
+   const accessToken = params.get('access_token');
+   ```
+
+6. **Use the access token** in API requests with the Authorization header
 
 ## API Endpoints
 
 ### Base URL
 `/api`
 
-### Authentication Flow Example
-```bash
-# First request - creates session
-curl -X GET "http://localhost:8000/api/guild/123456789" \
-  -H "Authorization: Bearer <discord_oauth_token>"
+### Complete Authentication Flow Example
 
-# Response includes Set-Cookie: session_id=...
-# Subsequent requests can use the cookie
-curl -X GET "http://localhost:8000/api/guild/123456789" \
-  -b "session_id=<session_id_from_cookie>"
-```
+1. **User visits Discord OAuth URL**:
+   ```
+   https://discord.com/oauth2/authorize?client_id=123456789&response_type=token&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2F&scope=identify+guilds
+   ```
+
+2. **User authorizes and gets redirected**:
+   ```
+   http://localhost:8000/#access_token=ABC123XYZ&token_type=Bearer&expires_in=604800&scope=identify+guilds
+   ```
+
+3. **Frontend extracts token and makes first API request**:
+   ```bash
+   # First request - creates session
+   curl -X GET "http://localhost:8000/api/guild/123456789" \
+     -H "Authorization: Bearer ABC123XYZ"
+   ```
+
+4. **Server response includes session cookie**:
+   ```
+   Set-Cookie: session_id=generated_session_id; HttpOnly; Secure; SameSite=Lax
+   ```
+
+5. **Subsequent requests use the session cookie**:
+   ```bash
+   curl -X GET "http://localhost:8000/api/guild/123456789" \
+     -b "session_id=generated_session_id"
+   ```
 
 ### Authenticated Routes - Requires valid session
 
