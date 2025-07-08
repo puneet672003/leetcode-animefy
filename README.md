@@ -1,8 +1,3 @@
-# Leetcode Animefy Bot
-
-## Overview
-LeetCode Animefy Bot is a fun Discord bot built with FastAPI that brings daily LeetCode battles to your server. Set it up via a web dashboard, add users, and watch it post anime-style fight scenes and leaderboards based on who solved the most problems—delivered straight to your channel via webhook.
-
 ## Project Structure
 ```
 leetcode-animefy-bot/
