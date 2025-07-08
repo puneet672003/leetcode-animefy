@@ -41,7 +41,15 @@ class DiscordUser:
             if response.status_code == 200:
                 guilds = response.json()
                 return [
-                    {"id": guild["id"], "name": guild["name"]}
+                    {
+                        "id": guild["id"],
+                        "name": guild["name"],
+                        "avatar": (
+                            f"{self.CDN_URL}/icons/{guild["id"]}/{guild["icon"]}.png"
+                            if guild["icon"]
+                            else None
+                        ),
+                    }
                     for guild in guilds
                     if int(guild.get("permissions", 0)) & self.MANAGE_GUILD
                 ]
