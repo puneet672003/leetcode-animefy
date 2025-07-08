@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from pymongo.errors import DuplicateKeyError
 
+from core.discord.bot import DiscordBot
 from managers.guild_data import GuildManager
-from core.discord_bot import DiscordBot
 from models.discord import DiscordClientException
 
 

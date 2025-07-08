@@ -3,8 +3,8 @@ from starlette.requests import HTTPConnection
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from models.auth import SessionData
+from core.discord.user import DiscordUser
 from managers.session_data import SessionManager
-from core.discord_user import DiscordUser
 from core.logger import logger
 
 

@@ -6,7 +6,7 @@ load_dotenv()
 
 from core.logger import logger
 from core.server import Server
-from core.discord_bot import DiscordBot
+from core.discord.bot import DiscordBot
 
 
 async def main():
