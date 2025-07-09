@@ -5,6 +5,9 @@ from models.auth import SessionData
 
 
 async def verify_guild_access(request: Request, guild_id: str = Path(...)) -> str:
+    if not guild_id.isdigit():
+        raise HTTPException(status_code=400, detail="guild_id must be a number string")
+
     is_authenticated = getattr(request.state, "is_authenticated", False)
     if not is_authenticated:
         raise HTTPException(status_code=401, detail="Authentication required")

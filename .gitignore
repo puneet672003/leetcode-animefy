@@ -6,6 +6,9 @@ __pycache__/
 dist/
 build/
 
+# Lock files
+poetry.lock
+
 # Virtual environment
 venv/
 env/

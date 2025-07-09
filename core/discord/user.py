@@ -24,7 +24,7 @@ class DiscordUser:
                 return UserInfo(
                     username=data["username"],
                     avatar=(
-                        f"{self.CDN_URL}/avatars/{data["id"]}/{data["avatar"]}.png"
+                        f"{self.CDN_URL}/avatars/{data['id']}/{data['avatar']}.png"
                         if data.get("avatar")
                         else None
                     ),
@@ -46,7 +46,7 @@ class DiscordUser:
                         id=guild["id"],
                         name=guild["name"],
                         icon=(
-                            f"{self.CDN_URL}/icons/{guild["id"]}/{guild["icon"]}.png"
+                            f"{self.CDN_URL}/icons/{guild['id']}/{guild['icon']}.png"
                             if guild.get("icon")
                             else None
                         ),
