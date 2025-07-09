@@ -7,6 +7,7 @@ leetcode-animefy-bot/
 ├── models/         # Pydantic models for data validation
 ├── routes/         # API routes
 ├── services/       # Business logic services
+├── discord/        # Discord API wrappers
 └── main.py         # Entry point
 ```
 
@@ -131,6 +132,13 @@ To get a Discord OAuth token:
 - **Response**:
   - `200 OK`: Guild created successfully.
   - `400 Bad Request`: Guild ID must be a number string.
+
+#### Get Guild Channels
+- **URL**: `GET /api/guild/{guild_id}/channel`
+- **Description**: Fetch manageable channels for a guild.
+- **Response**:
+  - `200 OK`: Returns channel data.
+  - `400 Bad Request`: Guild ID must be a number string.
   - `409 Conflict`: Guild ID already exists.
 
 #### Read Guild
@@ -166,6 +174,17 @@ To get a Discord OAuth token:
 - **AuthMiddleware**: Handles authentication via Discord tokens and session cookies.
 - **GuildAuthorizationMiddleware**: Verifies access to specific guilds.
 
+## Discord Bot Architecture
+
+The Discord bot has been updated to use only REST API wrappers instead of WebSocket connections. Key changes:
+
+- **REST API Only**: No WebSocket connections for real-time events
+- **Login Method**: Uses `await bot.login()` instead of `bot.start()`
+- **Lifespan Management**: Bot connection is managed through FastAPI's lifespan context
+- **Fetch Operations**: All Discord operations use fetch methods instead of cached get methods
+
+This change improves reliability and reduces resource usage by eliminating persistent WebSocket connections.
+
 ## Running the Project
 
 ### Prerequisites
@@ -192,7 +211,11 @@ To get a Discord OAuth token:
    # Edit .env file with your actual values
    ```
 
-4. **Start the server**
+4. **Discord Bot Setup**
+   The bot now operates using only Discord REST API wrappers.
+   Ensure correct permissions are set for managing webhooks.
+
+5. **Start the server**
    ```bash
    python main.py
    ```
