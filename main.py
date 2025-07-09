@@ -6,16 +6,11 @@ load_dotenv()
 
 from core.logger import logger
 from core.server import Server
-from core.discord.bot import DiscordBot
-
-
-async def main():
-    await asyncio.gather(Server.start_server(), DiscordBot.run_bot())
 
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        asyncio.run(Server.start_server())
     except KeyboardInterrupt:
         logger.info("OK bye")
     except BaseException as e:

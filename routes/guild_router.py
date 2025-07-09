@@ -23,6 +23,14 @@ async def read_guild(guild_id: str = Depends(verify_guild_access)):
     return await guild_service.get_guild_data(guild_id)
 
 
+@guild_router.get("/{guild_id}/channel")
+async def get_channels(guild_id: str = Depends(verify_guild_access)):
+    if not guild_id.isdigit():
+        raise HTTPException(status_code=400, detail="guild_id must be a number string")
+
+    return await guild_service.get_guild_channels(guild_id)
+
+
 @guild_router.post("/{guild_id}/channel")
 async def update_channel(
     data: UpdateGuildInput, guild_id: str = Depends(verify_guild_access)

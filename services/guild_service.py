@@ -21,13 +21,13 @@ async def get_guild_data(guild_id: str):
     return guild.model_dump()
 
 
-async def get_guild_channels(guild_id: str, channel_id: str):
+async def get_guild_channels(guild_id: str):
     try:
         channels = await DiscordBot.get_manageable_channels(guild_id)
     except DiscordClientException as e:
         raise HTTPException(e.status_code, e.message)
 
-    return [channel.model_dump for channel in channels]
+    return [channel.model_dump() for channel in channels]
 
 
 async def set_channel(guild_id: str, channel_id: str):

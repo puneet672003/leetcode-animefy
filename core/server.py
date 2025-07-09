@@ -1,15 +1,17 @@
 import uvicorn
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import Config
-from routes import global_router
+from core.discord.bot import DiscordBot
 
+from routes import global_router
 from middlewares.auth_middleware import AuthMiddleware
 
 
 class Server:
-    app = FastAPI()
+    app = None
 
     @classmethod
     def setup_routes(cls):
@@ -32,6 +34,16 @@ class Server:
 
     @classmethod
     def create_app(cls):
+        if cls.app is None:
+
+            @asynccontextmanager
+            async def lifespan(app: FastAPI):
+                await DiscordBot.run_bot()
+                yield
+                await DiscordBot.close_conn()
+
+            cls.app = FastAPI(lifespan=lifespan)
+
         cls.setup_middleware()
         cls.setup_routes()
         return cls.app
