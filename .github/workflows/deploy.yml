@@ -37,9 +37,12 @@ jobs:
       - name: TF Apply (IAM + ECR)
         working-directory: ./infra
         env:
-            TF_VAR_aws_region: ${{ env.AWS_REGION }}
-            TF_VAR_aws_account_id: ${{ env.AWS_ACCOUNT_ID }}
-            TF_VAR_ecr_repo_name: ${{ env.ECR_REPO_NAME }}
+          TF_VAR_aws_region: ${{ env.AWS_REGION }}
+          TF_VAR_ecr_repo_name: ${{ env.ECR_REPO_NAME }}
+          TF_VAR_aws_account_id: ${{ env.AWS_ACCOUNT_ID }}
+          TF_VAR_discord_bot_token: ${{ secrets.DISCORD_BOT_TOKEN }}
+          TF_VAR_cache_token: ${{ secrets.CACHE_TOKEN }}
+          TF_VAR_cache_endpoint: ${{ secrets.CACHE_ENDPOINT }}
         run: |
           terraform apply \
             -target="aws_ecr_repository.ecr_repo" \
@@ -109,6 +112,9 @@ jobs:
       - name: TF Apply (Lambda + API)
         working-directory: ./infra
         env:
+          TF_VAR_aws_region: ${{ env.AWS_REGION }}
+          TF_VAR_ecr_repo_name: ${{ env.ECR_REPO_NAME }}
+          TF_VAR_aws_account_id: ${{ env.AWS_ACCOUNT_ID }}
           TF_VAR_discord_bot_token: ${{ secrets.DISCORD_BOT_TOKEN }}
           TF_VAR_cache_token: ${{ secrets.CACHE_TOKEN }}
           TF_VAR_cache_endpoint: ${{ secrets.CACHE_ENDPOINT }}
