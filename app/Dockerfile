@@ -1,25 +1,20 @@
+# Use the AWS Lambda Python base image
 FROM public.ecr.aws/lambda/python:3.11
 
-# Environment settings for cleaner, safer behavior
+# Environment setup
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy requirements first to leverage Docker layer caching
+# Install requirements
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install system deps temporarily for build, then remove to reduce vulnerabilities
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
- && pip install --no-cache-dir -r requirements.txt \
- && apt-get purge -y build-essential \
- && apt-get autoremove -y \
- && rm -rf /var/lib/apt/lists/*
-
-# Now copy the full project
+# Copy your FastAPI app
 COPY . .
 
-# Run the app
-CMD ["python", "main.py"]
+# Set the Lambda handler
+# asgi.handler means: from asgi.py import handler
+CMD ["asgi.handler"]
