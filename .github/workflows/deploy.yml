@@ -12,6 +12,7 @@ jobs:
     env:
       AWS_REGION: ap-south-1
       ECR_REPO_NAME: leetcode-animefy
+      TF_VAR_aws_account_id: 156555176246
 
     steps:
       - name: Checkout
