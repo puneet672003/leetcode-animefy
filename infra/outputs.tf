@@ -9,3 +9,7 @@ output "lambda_image_uri" {
 output "ecr_repo_url" {
   value = aws_ecr_repository.ecr_repo.repository_url
 }
+
+output "lambda_api_url" {
+  value = aws_apigatewayv2_api.http_api.api_endpoint
+}
