@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bookworm
+FROM public.ecr.aws/lambda/python:3.11
 
 # Environment settings for cleaner, safer behavior
 ENV PYTHONDONTWRITEBYTECODE=1 \

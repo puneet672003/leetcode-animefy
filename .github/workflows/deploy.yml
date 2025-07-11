@@ -1,0 +1,57 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ap-south-1
+      ECR_REPO_NAME: leetcode-animefy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: AWS Auth
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Setup TF
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: TF Init
+        run: terraform init
+
+      - name: TF Apply (IAM + ECR)
+        run: |
+          terraform apply \
+            -target="aws_ecr_repository.ecr_repo" \
+            -target="aws_iam_role.lambda_exec_role" \
+            -target="aws_iam_role_policy_attachment.lambda_logs_policy" \
+            -target="aws_iam_role_policy_attachment.lambda_dynamodb_managed_policy" \
+            -auto-approve
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Docker Push
+        run: |
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO_NAME }}:latest"
+          docker build -t "$IMAGE_URI" ./app
+          docker push "$IMAGE_URI"
+
+      - name: TF Apply (Lambda + API)
+        env:
+          TF_VAR_discord_bot_token: ${{ secrets.DISCORD_BOT_TOKEN }}
+          TF_VAR_cache_token: ${{ secrets.CACHE_TOKEN }}
+          TF_VAR_cache_endpoint: ${{ secrets.CACHE_ENDPOINT }}
+        run: terraform apply -auto-approve
