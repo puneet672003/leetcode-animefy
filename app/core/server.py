@@ -17,7 +17,7 @@ class Server:
     def setup_routes(cls):
         @cls.app.get("/")
         async def root():
-            return {"message": "Hello from FastAPI!"}
+            return {"message": "Hello from FastAPI! testing"}
 
         cls.app.include_router(global_router)
 
