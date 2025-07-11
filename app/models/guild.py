@@ -1,10 +1,8 @@
-from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Literal
 
 
 class GuildData(BaseModel):
-    # id: ObjectId = Field(alias="_id")
     guild_id: str
     channel_id: Optional[str] = None
     webhook_id: Optional[str] = None
