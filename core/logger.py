@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.traceback import Traceback
 
 
-class logger:
+class Logger:
     _logger = logging.getLogger("uvicorn")
     _console = Console()
 

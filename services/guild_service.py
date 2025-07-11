@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from pymongo.errors import DuplicateKeyError
 
 from core.discord.bot import DiscordBot
 from managers.guild_data import GuildManager
@@ -7,11 +6,10 @@ from models.discord import DiscordClientException
 
 
 async def add_guild(guild_id: str):
-    try:
-        res = await GuildManager.init_guild(guild_id)
-        return res.model_dump()
-    except DuplicateKeyError:
+    res = await GuildManager.init_guild(guild_id)
+    if res is None:
         raise HTTPException(status_code=409, detail="Guild ID already exists")
+    return res.model_dump()
 
 
 async def get_guild_data(guild_id: str):

@@ -38,11 +38,10 @@ class Server:
 
             @asynccontextmanager
             async def lifespan(app: FastAPI):
-                await DiscordBot.run_bot()
                 yield
-                await DiscordBot.close_conn()
+                await DiscordBot.close()
 
-            cls.app = FastAPI(lifespan=lifespan)
+            cls.app = FastAPI(lifespan=lifespan if Config.DEVELOPMENT else "off")
 
         cls.setup_middleware()
         cls.setup_routes()

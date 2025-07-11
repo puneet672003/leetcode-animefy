@@ -2,30 +2,47 @@ import discord
 from typing import List
 
 from core.config import Config
-from core.logger import logger
+from core.logger import Logger
 from models.discord import WebhookInfo, ChannelInfo, DiscordClientException
 
 
 class DiscordBot:
-    bot = discord.Bot()
+    _bot: discord.Bot = None
+    _logged_in: bool = False
 
     @classmethod
-    async def run_bot(cls):
-        await cls.bot.login(Config.BOT_TOKEN)
-        logger.info(f"Logged in as: {cls.bot.user}")
+    async def _get_bot(cls) -> discord.Bot:
+        if cls._bot is None:
+            cls._bot = discord.Bot(intents=discord.Intents.none())
+
+        if not cls._logged_in:
+            try:
+                await cls._bot.login(Config.BOT_TOKEN)
+                Logger.info(f"[DISCORD] Logged in as: {cls._bot.user}")
+                cls._logged_in = True
+            except discord.HTTPException as e:
+                Logger.error("[DISCORD] Failed to login", exc=e)
+                raise DiscordClientException("Bot login failed", status_code=401)
+
+        return cls._bot
 
     @classmethod
-    async def close_conn(cls):
-        await cls.bot.close()
+    async def close(cls):
+        if cls._bot and cls._logged_in:
+            await cls._bot.close()
+            cls._logged_in = False
 
     @classmethod
     async def _fetch_guild(cls, guild_id: int) -> discord.Guild:
+        bot = await cls._get_bot()
         try:
-            return await cls.bot.fetch_guild(guild_id)
+            return await bot.fetch_guild(guild_id)
         except discord.NotFound:
             raise DiscordClientException("Guild not found", status_code=404)
         except Exception as e:
-            logger.exception("[DISCORD] Unexpected error fetching guild")
+            Logger.warning(
+                f"[DISCORD] Unexpected error fetching guild: {guild_id}: {e}"
+            )
             raise DiscordClientException("Failed to fetch guild", status_code=500)
 
     @classmethod
@@ -37,19 +54,22 @@ class DiscordBot:
         except discord.NotFound:
             raise DiscordClientException("Channel not found", status_code=404)
         except Exception as e:
-            logger.exception("[DISCORD] Unexpected error fetching channel")
+            Logger.warning(
+                f"[DISCORD] Unexpected error fetching channel: {channel_id}: {e}"
+            )
             raise DiscordClientException("Failed to fetch channel", status_code=500)
 
     @classmethod
     async def _fetch_member(cls, guild: discord.Guild) -> discord.Member:
+        bot = await cls._get_bot()
         try:
-            return await guild.fetch_member(cls.bot.user.id)
+            return await guild.fetch_member(bot.user.id)
         except discord.NotFound:
             raise DiscordClientException(
                 "Bot is not a member of this guild", status_code=404
             )
         except Exception as e:
-            logger.exception("[DISCORD] Unexpected error fetching bot member")
+            Logger.warning(f"[DISCORD] Unexpected error fetching bot member: {e}")
             raise DiscordClientException("Failed to fetch bot member", status_code=500)
 
     @classmethod
@@ -72,7 +92,7 @@ class DiscordBot:
                 status_code=403,
             )
         except discord.HTTPException as e:
-            logger.exception("[DISCORD] HTTP error while creating webhook")
+            Logger.warning(f"[DISCORD] HTTP error while creating webhook: {e}")
             raise DiscordClientException(
                 f"Failed to create webhook: {e}", status_code=500
             )

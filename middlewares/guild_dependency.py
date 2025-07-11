@@ -1,6 +1,6 @@
 from fastapi import Request, HTTPException, Path
 
-from core.logger import logger
+from core.logger import Logger
 from models.auth import SessionData
 
 
@@ -23,7 +23,7 @@ async def verify_guild_access(request: Request, guild_id: str = Path(...)) -> st
             detail=f"Access denied: You don't have permission to manage guild {guild_id}",
         )
 
-    logger.info(
+    Logger.info(
         f"[GUILD_AUTH] User {session_data.user.username} granted access to guild {guild_id}"
     )
     return guild_id

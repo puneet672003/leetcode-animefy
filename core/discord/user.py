@@ -1,7 +1,7 @@
 import httpx
 from typing import List, Optional
 
-from core.logger import logger
+from core.logger import Logger
 from models.discord import UserInfo, GuildInfo
 
 
@@ -16,6 +16,12 @@ class DiscordUser:
             base_url=self.BASE_URL, headers={"Authorization": f"Bearer {self.token}"}
         )
 
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *args):
+        await self.close()
+
     async def fetch_user(self) -> Optional[UserInfo]:
         try:
             response = await self.client.get("/users/@me")
@@ -29,11 +35,11 @@ class DiscordUser:
                         else None
                     ),
                 )
-            logger.warning(
+            Logger.warning(
                 f"[DISCORD] Failed to fetch user: {response.status_code} - {response.text}"
             )
         except httpx.RequestError as e:
-            logger.error(f"[DISCORD] Request error (user): {e}")
+            Logger.error(f"[DISCORD] Request error (user): {e}")
         return None
 
     async def fetch_manageable_guilds(self) -> List[GuildInfo]:
@@ -54,11 +60,11 @@ class DiscordUser:
                     for guild in guilds
                     if int(guild.get("permissions", 0)) & self.MANAGE_GUILD
                 ]
-            logger.warning(
+            Logger.warning(
                 f"[DISCORD] Failed to fetch guilds: {response.status_code} - {response.text}"
             )
         except httpx.RequestError as e:
-            logger.error(f"[DISCORD] Request error (guilds): {e}")
+            Logger.error(f"[DISCORD] Request error (guilds): {e}")
         return []
 
     async def close(self):

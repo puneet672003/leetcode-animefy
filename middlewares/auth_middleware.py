@@ -2,10 +2,10 @@ from fastapi import Request
 from starlette.requests import HTTPConnection
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from core.logger import Logger
 from models.auth import SessionData
 from core.discord.user import DiscordUser
 from managers.session_data import SessionManager
-from core.logger import logger
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -23,27 +23,29 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         if session_data:
             self._set_auth(request, session_id, session_data)
-            logger.info(f"[AUTH] Found existing session: {session_id}")
+            Logger.info(f"[AUTH] Found existing session: {session_id}")
 
         elif header and header.startswith("Bearer "):
             token = header.split(" ")[1]
-            discord_gateway = DiscordUser(token)
+            async with DiscordUser(token) as discord_gateway:
+                user = await discord_gateway.fetch_user()
+                guilds = await discord_gateway.fetch_manageable_guilds()
 
-            user = await discord_gateway.fetch_user()
-            guilds = await discord_gateway.fetch_manageable_guilds()
-            if user:
-                session_data = SessionData(
-                    user=user,
-                    guilds=guilds,
-                    token={"access_token": token, "ex": 3600},
-                )
-                session_id = await SessionManager.create_session(session_data, ex=3600)
-                self._set_auth(request, session_id, session_data)
+                if user:
+                    session_data = SessionData(
+                        user=user,
+                        guilds=guilds,
+                        token={"access_token": token, "ex": 3600},
+                    )
+                    session_id = await SessionManager.create_session(
+                        session_data, ex=3600
+                    )
+                    self._set_auth(request, session_id, session_data)
 
-                logger.info(f"[AUTH] Created new session: {session_id}")
-            else:
-                self._set_unauth(request)
-                logger.warning(f"[AUTH] Invalid token: {token[:10]}...")
+                    Logger.info(f"[AUTH] Created new session: {session_id}")
+                else:
+                    self._set_unauth(request)
+                    Logger.warning(f"[AUTH] Invalid token: {token[:10]}...")
         else:
             self._set_unauth(request)
 

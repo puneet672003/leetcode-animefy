@@ -1,8 +1,8 @@
 import os
 
 
-def _get_env(key, required: bool = False):
-    val = os.environ.get(key)
+def _get_env(key, required: bool = False, default=None):
+    val = os.environ.get(key, default)
     if val is None and required:
         raise ValueError(f"{key} is missing.")
 
@@ -10,11 +10,16 @@ def _get_env(key, required: bool = False):
 
 
 class Config:
+    # bot
     BOT_TOKEN = _get_env("BOT_TOKEN", required=True)
-    DATABASE_URL = _get_env("DATABASE_URL", required=True)
-    DATABASE_NAME = _get_env("DATABASE_NAME", required=True)
-    SERVER_HOST = _get_env("UVICORN_HOST", required=True)
-    SERVER_PORT = int(_get_env("UVICORN_PORT", required=True))
-    CACHE_DB_HOST = _get_env("CACHE_DB_HOST", required=True)
-    CACHE_DB_PORT = int(_get_env("CACHE_DB_PORT", required=True))
-    CACHE_DB_PASSWORD = _get_env("CACHE_DB_PASSWORD", required=True)
+    # aws
+    AWS_DEFAULT_REGION = _get_env("AWS_DEFAULT_REGION", required=True)
+    AWS_ACCESS_KEY_ID = _get_env("AWS_ACCESS_KEY_ID", required=True)
+    AWS_SECRET_ACCESS_KEY = _get_env("AWS_SECRET_ACCESS_KEY", required=True)
+    # cache
+    CACHE_TOKEN = _get_env("CACHE_TOKEN", required=True)
+    CACHE_ENDPOINT = _get_env("CACHE_ENDPOINT", required=True)
+    # development
+    SERVER_HOST = _get_env("UVICORN_HOST", default="localhost")
+    SERVER_PORT = int(_get_env("UVICORN_PORT", default="8000"))
+    DEVELOPMENT = _get_env("DEVELOPMENT", default="false").lower() == "true"
