@@ -11,8 +11,8 @@ jobs:
     
     env:
       AWS_REGION: ap-south-1
+      AWS_ACCOUNT_ID: 156555176246
       ECR_REPO_NAME: leetcode-animefy
-      TF_VAR_aws_account_id: 156555176246
 
     steps:
       - name: Checkout
@@ -36,6 +36,10 @@ jobs:
 
       - name: TF Apply (IAM + ECR)
         working-directory: ./infra
+        env:
+            TF_VAR_aws_region: ${{ env.AWS_REGION }}
+            TF_VAR_aws_account_id: ${{ env.AWS_ACCOUNT_ID }}
+            TF_VAR_ecr_repo_name: ${{ env.ECR_REPO_NAME }}
         run: |
           terraform apply \
             -target="aws_ecr_repository.ecr_repo" \
