@@ -18,7 +18,7 @@ Resources:
   MainLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub "${RepoName}-lambda"
+      FunctionName: !Sub "${RepoName}-main"
       PackageType: Image
       Code:
         ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepoName}:latest"

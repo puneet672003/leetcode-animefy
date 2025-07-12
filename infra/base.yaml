@@ -67,3 +67,8 @@ Resources:
           - Effect: Allow
             Action: "dynamodb:*"
             Resource: "*"
+
+Outputs:
+  LambdaExecutionRoleArn:
+    Value: !GetAtt LambdaExecutionRole.Arn
+    Description: ARN of Lambda Execution Role
