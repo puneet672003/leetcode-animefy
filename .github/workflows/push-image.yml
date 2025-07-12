@@ -28,7 +28,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_NAME }}:${{github.run_number}}.${{github.run_attempt}}"
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_NAME }}:test"
           docker build -t "$IMAGE_URI" ./app
           docker push "$IMAGE_URI"
           
