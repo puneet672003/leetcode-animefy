@@ -83,7 +83,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "ANY /{proxy+}"
+      RouteKey: "ANY /api/{proxy+}"
       Target: !Sub "integrations/${LambdaIntegrationMain}"
 
   # Route: Scheduler
@@ -91,7 +91,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "ANY /api/schedule"
+      RouteKey: "ANY /api/schedule/{proxy+}"
       Target: !Sub "integrations/${LambdaIntegrationScheduler}"
 
   # Stage
