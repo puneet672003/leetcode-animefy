@@ -17,7 +17,7 @@ class Server:
     def setup_routes(cls):
         @cls.app.get("/")
         async def root():
-            return {"message": "Hi, welcome to leetcode animefy!"}
+            return {"message": "Welcome"}
 
         cls.app.include_router(global_router)
 
