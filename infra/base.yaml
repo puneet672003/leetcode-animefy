@@ -10,7 +10,7 @@ Resources:
   GuildsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: Guilds
+      TableName: guilds
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: guild_id
