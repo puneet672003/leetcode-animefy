@@ -1,4 +1,3 @@
-# deployment.yaml
 AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
@@ -16,7 +15,7 @@ Parameters:
     Type: String
 
 Resources:
-  # Lambda Function
+  # Main Lambda Function
   MainLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -32,6 +31,25 @@ Resources:
           BOT_TOKEN: !Ref DiscordBotToken
           CACHE_TOKEN: !Ref CacheToken
           CACHE_ENDPOINT: !Ref CacheEndpoint
+          APP_TYPE: "main"
+
+  # Scheduler Lambda Function
+  SchedulerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${RepoName}-scheduler"
+      PackageType: Image
+      Code:
+        ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepoName}:${ImageTag}"
+      Role: !Ref LambdaExecutionRoleArn
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          BOT_TOKEN: !Ref DiscordBotToken
+          CACHE_TOKEN: !Ref CacheToken
+          CACHE_ENDPOINT: !Ref CacheEndpoint
+          APP_TYPE: "scheduler"
 
   # API Gateway HTTP API
   HttpApi:
@@ -40,7 +58,8 @@ Resources:
       Name: lambda-http-api
       ProtocolType: HTTP
 
-  LambdaIntegration:
+  # Integration: Main
+  LambdaIntegrationMain:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
       ApiId: !Ref HttpApi
@@ -49,13 +68,33 @@ Resources:
       IntegrationMethod: POST
       PayloadFormatVersion: "2.0"
 
-  ApiRoute:
+  # Integration: Scheduler
+  LambdaIntegrationScheduler:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt SchedulerLambda.Arn
+      IntegrationMethod: POST
+      PayloadFormatVersion: "2.0"
+
+  # Route: Main
+  ApiRouteMain:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
       RouteKey: "ANY /{proxy+}"
-      Target: !Sub "integrations/${LambdaIntegration}"
+      Target: !Sub "integrations/${LambdaIntegrationMain}"
 
+  # Route: Scheduler
+  ApiRouteScheduler:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "ANY /api/schedule/{proxy+}"
+      Target: !Sub "integrations/${LambdaIntegrationScheduler}"
+
+  # Stage
   ApiStage:
     Type: AWS::ApiGatewayV2::Stage
     Properties:
@@ -63,10 +102,19 @@ Resources:
       StageName: "$default"
       AutoDeploy: true
 
-  LambdaInvokePermission:
+  # Permissions
+  LambdaInvokePermissionMain:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref MainLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*"
+
+  LambdaInvokePermissionScheduler:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SchedulerLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*"
