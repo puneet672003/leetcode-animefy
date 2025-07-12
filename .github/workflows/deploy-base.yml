@@ -1,0 +1,33 @@
+name: deploy-base
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-base:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ap-south-1
+      REPO_NAME: leetcode-animefy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy base.yaml
+        working-directory: ./infra
+        run: |
+          aws cloudformation deploy \
+            --template-file base.yaml \
+            --stack-name ${{ env.REPO_NAME }}-base-infra \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides \
+              RepoName=${{ env.REPO_NAME }}

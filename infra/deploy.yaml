@@ -1,0 +1,75 @@
+# deployment.yaml
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  RepoName:
+    Type: String
+  DiscordBotToken:
+    Type: String
+  CacheToken:
+    Type: String
+  CacheEndpoint:
+    Type: String
+  LambdaExecutionRoleArn:
+    Type: String
+
+Resources:
+  # Lambda Function
+  MainLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${RepoName}-lambda"
+      PackageType: Image
+      Code:
+        ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepoName}:latest"
+      Role: !Ref LambdaExecutionRoleArn
+      Timeout: 30
+      MemorySize: 512
+      Environment:
+        Variables:
+          BOT_TOKEN: !Ref DiscordBotToken
+          CACHE_TOKEN: !Ref CacheToken
+          CACHE_ENDPOINT: !Ref CacheEndpoint
+
+  # API Gateway HTTP API
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: lambda-http-api
+      ProtocolType: HTTP
+
+  LambdaIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt MainLambda.Arn
+      IntegrationMethod: POST
+      PayloadFormatVersion: "2.0"
+
+  ApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: "ANY /{proxy+}"
+      Target: !Sub "integrations/${LambdaIntegration}"
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: "$default"
+      AutoDeploy: true
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref MainLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*"
+
+Outputs:
+  ApiUrl:
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+    Description: Public HTTP endpoint for the Lambda function
