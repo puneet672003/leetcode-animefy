@@ -91,7 +91,7 @@ Resources:
     Type: AWS::ApiGatewayV2::Route
     Properties:
       ApiId: !Ref HttpApi
-      RouteKey: "ANY /api/schedule/{proxy+}"
+      RouteKey: "ANY /api/schedule"
       Target: !Sub "integrations/${LambdaIntegrationScheduler}"
 
   # Stage
