@@ -4,12 +4,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-app:
+  build-and-push:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ap-south-1
-      REPO_NAME: leetcode-animefy
+      REPO_NAME: ${{ vars.REPO_NAME }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Image
+        run: |
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_NAME }}:${{ github.run_number }}.${{ github.run_attempt }}"
+          docker build -t "$IMAGE_URI" ./app
+          docker push "$IMAGE_URI"
+
+  deploy-app:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    env:
+      REPO_NAME: ${{ vars.REPO_NAME }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
       CACHE_TOKEN: ${{ secrets.CACHE_TOKEN }}
       CACHE_ENDPOINT: ${{ secrets.CACHE_ENDPOINT }}
@@ -25,7 +54,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - name: Get LambdaExecutionRoleArn from base-infra stack
+      - name: Get LambdaExecutionRoleArn
         id: get-role
         run: |
           ROLE_ARN=$(aws cloudformation describe-stacks \
@@ -34,7 +63,7 @@ jobs:
             --output text)
           echo "LambdaExecutionRoleArn=$ROLE_ARN" >> "$GITHUB_ENV"
 
-      - name: Deploy Lambda + API Gateway
+      - name: Deploy app
         working-directory: ./infra
         run: |
           aws cloudformation deploy \
@@ -42,15 +71,15 @@ jobs:
             --stack-name ${{ env.REPO_NAME }}-app-deploy \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
+              ImageTag=${{ github.run_number }}.${{ github.run_attempt }} \
               RepoName=${{ env.REPO_NAME }} \
               LambdaFunctionName=${{ env.REPO_NAME }}-main \
               DiscordBotToken=${{ env.DISCORD_BOT_TOKEN }} \
               CacheToken=${{ env.CACHE_TOKEN }} \
               CacheEndpoint=${{ env.CACHE_ENDPOINT }} \
-              LambdaExecutionRoleArn=${{ env.LambdaExecutionRoleArn }} \
-              ForceUpdateToken=$(date +%s)
+              LambdaExecutionRoleArn=${{ env.LambdaExecutionRoleArn }}
 
-      - name: Get deployed API URL
+      - name: Get API URL
         run: |
           API_URL=$(aws cloudformation describe-stacks \
             --stack-name ${{ env.REPO_NAME }}-app-deploy \

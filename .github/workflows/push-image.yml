@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ap-south-1
-      REPO_NAME: leetcode-animefy
+      REPO_NAME: ${{ vars.REPO_NAME }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
 
     steps:
       - name: Checkout repo
@@ -28,6 +28,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_NAME }}:latest"
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_NAME }}:${{github.run_number}}.${{github.run_attempt}}"
           docker build -t "$IMAGE_URI" ./app
           docker push "$IMAGE_URI"
+          

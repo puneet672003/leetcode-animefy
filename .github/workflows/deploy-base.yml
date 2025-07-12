@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ap-south-1
-      REPO_NAME: leetcode-animefy
+      REPO_NAME: ${{ vars.REPO_NAME }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
 
     steps:
       - name: Checkout

@@ -2,6 +2,8 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
+  ImageTag:
+    Type: String
   RepoName:
     Type: String
   DiscordBotToken:
@@ -12,8 +14,6 @@ Parameters:
     Type: String
   LambdaExecutionRoleArn:
     Type: String
-  ForceUpdateToken: # random token to force update
-    Type: String
 
 Resources:
   # Lambda Function
@@ -23,7 +23,7 @@ Resources:
       FunctionName: !Sub "${RepoName}-main"
       PackageType: Image
       Code:
-        ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepoName}:latest"
+        ImageUri: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepoName}:${ImageTag}"
       Role: !Ref LambdaExecutionRoleArn
       Timeout: 30
       MemorySize: 512
@@ -32,7 +32,6 @@ Resources:
           BOT_TOKEN: !Ref DiscordBotToken
           CACHE_TOKEN: !Ref CacheToken
           CACHE_ENDPOINT: !Ref CacheEndpoint
-          FORCE_UPDATE: !Ref ForceUpdateToken
 
   # API Gateway HTTP API
   HttpApi:
