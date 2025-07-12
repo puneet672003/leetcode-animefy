@@ -9,13 +9,13 @@ jobs:
 
     env:
       AWS_REGION: ap-south-1
-      ECR_REPO_NAME: leetcode-animefy
+      REPO_NAME: leetcode-animefy
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: ${{ env.AWS_REGION }}
@@ -26,8 +26,8 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push Docker image
+      - name: Build and push Docker image
         run: |
-          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO_NAME }}:latest"
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.REPO_NAME }}:latest"
           docker build -t "$IMAGE_URI" ./app
           docker push "$IMAGE_URI"
