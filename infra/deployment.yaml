@@ -12,6 +12,8 @@ Parameters:
     Type: String
   LambdaExecutionRoleArn:
     Type: String
+  ForceUpdateToken: # random token to force update
+    Type: String
 
 Resources:
   # Lambda Function
@@ -30,6 +32,7 @@ Resources:
           BOT_TOKEN: !Ref DiscordBotToken
           CACHE_TOKEN: !Ref CacheToken
           CACHE_ENDPOINT: !Ref CacheEndpoint
+          FORCE_UPDATE: !Ref ForceUpdateToken
 
   # API Gateway HTTP API
   HttpApi:

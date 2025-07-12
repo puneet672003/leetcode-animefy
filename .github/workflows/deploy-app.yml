@@ -47,7 +47,8 @@ jobs:
               DiscordBotToken=${{ env.DISCORD_BOT_TOKEN }} \
               CacheToken=${{ env.CACHE_TOKEN }} \
               CacheEndpoint=${{ env.CACHE_ENDPOINT }} \
-              LambdaExecutionRoleArn=${{ env.LambdaExecutionRoleArn }}
+              LambdaExecutionRoleArn=${{ env.LambdaExecutionRoleArn }} \
+              ForceUpdateToken=$(date +%s)
 
       - name: Get deployed API URL
         run: |
