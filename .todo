@@ -1,0 +1,14 @@
+Scheduling:
+    Infra: 
+        + Add table to handle jobs @done(25-07-12 23:07)
+        - Add authorization check on `/api/scheduler` endpoint
+    Backend:
+        - Add route to add job at specefic time slot
+        - Other routes like update slot, remove slot etc
+        Core:
+            - Add ai agent wrapper
+            - Add leetcode wrapper
+    HTTP cron scheduler:
+        - For every task added to db, add corresponding cron event scheduler
+        - Add endpoint to trigger lambda
+        

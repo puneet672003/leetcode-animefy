@@ -55,7 +55,7 @@ Resources:
   HttpApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: lambda-http-api
+      Name: !Sub "${RepoName}-http-api"
       ProtocolType: HTTP
 
   # Integration: Main

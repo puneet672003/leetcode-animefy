@@ -10,13 +10,26 @@ Resources:
   GuildsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: guilds
+      TableName: !Sub "${RepoName}-db-guilds"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: guild_id
           AttributeType: S
       KeySchema:
         - AttributeName: guild_id
+          KeyType: HASH
+
+  # DynamoDB Table - Jobs
+  JobsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${RepoName}-db-jobs"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: slot
+          AttributeType: S
+      KeySchema:
+        - AttributeName: slot
           KeyType: HASH
 
   # ECR Repo

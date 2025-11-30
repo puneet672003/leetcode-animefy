@@ -11,7 +11,7 @@ def _get_env(key, required: bool = False, default=None):
 
 class Config:
     # app
-    APP_TYPE = _get_env("APP_TYPE", default="default")
+    APP_TYPE = _get_env("APP_TYPE", default="main")
     # bot
     BOT_TOKEN = _get_env("BOT_TOKEN", required=True)
     # aws
