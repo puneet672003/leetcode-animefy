@@ -46,6 +46,14 @@ async def set_channel(guild_id: str, channel_id: str):
     return updated_data.model_dump()
 
 
+async def set_slot(guild_id: str, slot: ParsedSlot):
+    updated_data = await GuildManager.set_slot(guild_id, f"{slot.hh}:{slot.mm}")
+    if not updated_data:
+        raise HTTPException(status_code=404, detail="Guild not found")
+
+    return updated_data.model_dump()
+
+
 async def add_user(guild_id: str, username: str):
     updated_data = await GuildManager.add_leetcode_user(guild_id, username)
     if not updated_data:

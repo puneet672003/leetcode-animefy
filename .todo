@@ -3,12 +3,13 @@ Scheduling:
         x Add table to handle jobs @cancelled(25-12-06 21:16)
         + Add authorization check on `/api/scheduler` endpoint @done(25-12-06 19:45)
     Backend:
-        - Add route to add job at specefic time slot
+        + Add route to add job at specefic time slot @done(25-12-06 23:45)
         - Other routes like update slot, remove slot etc
         Core:
             - Add ai agent wrapper
             - Add leetcode wrapper
     HTTP cron scheduler:
-        - For every task added to db, add corresponding cron event scheduler
-        - Add endpoint to trigger lambda
+        x For every task added to db, add corresponding cron event scheduler @cancelled(25-12-06 23:53)
+        - Add cron-job to trigger lambda every 30 minutes.
+        + Add endpoint to trigger lambda @done(25-12-06 23:46)
         

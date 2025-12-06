@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 
 from services import guild_service
 from middlewares.guild_dependency import verify_guild_access
+from models.guild import ScheduleInput
 from models.guild import UpdateGuildInput, UpdateGuildUserInput
 
 guild_router = APIRouter()
@@ -37,3 +38,10 @@ async def update_guild_user(
         return await guild_service.add_user(guild_id, data.user_id)
     elif data.action == "remove":
         return await guild_service.remove_user(guild_id, data.user_id)
+
+
+@guild_router.post("/{guild_id}/slot")
+async def update_guild_slot(
+    data: ScheduleInput, guild_id: str = Depends(verify_guild_access)
+):
+    return await guild_service.set_slot(guild_id, data.slot)

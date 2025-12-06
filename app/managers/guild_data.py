@@ -23,7 +23,9 @@ class GuildManager:
                 webhook_id=None,
                 leetcode_users=[],
             )
-            await DBClient.put_item(GuildManager.table_name, doc.model_dump())
+            await DBClient.put_item(
+                GuildManager.table_name, doc.model_dump(exclude_none=True)
+            )
             return doc
 
     @staticmethod
