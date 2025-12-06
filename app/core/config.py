@@ -12,6 +12,8 @@ def _get_env(key, required: bool = False, default=None):
 class Config:
     # app
     APP_TYPE = _get_env("APP_TYPE", default="main")
+    REPO_NAME = _get_env("REPO_NAME", required=True)
+    SCHEDULER_SECRET = _get_env("SCHEDULER_SECRET", required=True)
     # bot
     BOT_TOKEN = _get_env("BOT_TOKEN", required=True)
     # aws

@@ -1,8 +1,10 @@
+import secrets
 from fastapi import Request
 from starlette.requests import HTTPConnection
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from core.logger import Logger
+from core.config import Config
 from models.auth import SessionData
 from core.discord.user import DiscordUser
 from managers.session_data import SessionManager
@@ -26,7 +28,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             Logger.info(f"[AUTH] Found existing session: {session_id}")
 
         elif header and header.startswith("Bearer "):
-            token = header.split(" ")[1]
+            token = header.split(" ", 1)[1]
             async with DiscordUser(token) as discord_gateway:
                 user = await discord_gateway.fetch_user()
                 guilds = await discord_gateway.fetch_manageable_guilds()
@@ -77,3 +79,25 @@ class AuthMiddleware(BaseHTTPMiddleware):
         request.state.session_data = None
 
         request.state.is_authenticated = False
+
+
+class SchedulerAuthMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, header_name="Authorization"):
+        super().__init__(app)
+        self.header_name = header_name
+
+    async def dispatch(self, request: Request, call_next):
+        header = request.headers.get(self.header_name)
+        request.state.is_scheduler_authenticated = False
+
+        if header and header.startswith("Bearer "):
+            token = header.split(" ", 1)[1]
+            if secrets.compare_digest(token, Config.SCHEDULER_SECRET):
+                request.state.is_scheduler_authenticated = True
+                Logger.info(f"[SCHEDULER AUTH] Authentication successfull")
+            else:
+                Logger.warning(f"[SCHEDULER AUTH] Incorrect token")
+        else:
+            Logger.warning(f"[SCHEDULER AUTH] Invalid token")
+
+        return await call_next(request)

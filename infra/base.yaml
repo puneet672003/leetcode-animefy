@@ -15,22 +15,18 @@ Resources:
       AttributeDefinitions:
         - AttributeName: guild_id
           AttributeType: S
-      KeySchema:
-        - AttributeName: guild_id
-          KeyType: HASH
-
-  # DynamoDB Table - Jobs
-  JobsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${RepoName}-db-jobs"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
         - AttributeName: slot
           AttributeType: S
       KeySchema:
-        - AttributeName: slot
+        - AttributeName: guild_id
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: slot-index
+          KeySchema:
+            - AttributeName: slot
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
 
   # ECR Repo
   EcrRepo:

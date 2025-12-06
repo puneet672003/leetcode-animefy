@@ -29,6 +29,27 @@ class DBClient:
         return response.get("Item")
 
     @classmethod
+    async def query(
+        cls,
+        table_name: str,
+        index_name: Optional[str],
+        key_condition: str,
+        values: Dict[str, Any],
+    ) -> list[Dict[str, Any]]:
+        table = cls._get_table(table_name)
+
+        kwargs = {
+            "KeyConditionExpression": key_condition,
+            "ExpressionAttributeValues": values,
+        }
+
+        if index_name:
+            kwargs["IndexName"] = index_name
+
+        response = await run_in_threadpool(table.query, **kwargs)
+        return response.get("Items", [])
+
+    @classmethod
     async def update_item(
         cls,
         table_name: str,

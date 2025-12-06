@@ -1,8 +1,10 @@
 from fastapi import HTTPException
 
+from core.logger import Logger
+from models.guild import ParsedSlot
+from models.discord import DiscordClientException
 from core.discord.bot import DiscordBot
 from managers.guild_data import GuildManager
-from models.discord import DiscordClientException
 
 
 async def add_guild(guild_id: str):
@@ -58,3 +60,10 @@ async def remove_user(guild_id: str, username: str):
         raise HTTPException(status_code=404, detail="Guild not found")
 
     return updated_data.model_dump()
+
+
+async def run_slot_jobs(slot: ParsedSlot):
+    guilds = await GuildManager.get_guilds_by_slot(f"{slot.hh}:{slot.mm}")
+    if guilds and len(guilds) > 0:
+        for guild in guilds:
+            Logger.info(f"Running for {guild}")

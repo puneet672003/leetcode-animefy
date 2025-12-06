@@ -7,7 +7,7 @@ from core.config import Config
 from core.discord.bot import DiscordBot
 
 from routes import global_router
-from middlewares.auth_middleware import AuthMiddleware
+from middlewares.auth_middleware import AuthMiddleware, SchedulerAuthMiddleware
 
 
 class Server:
@@ -30,7 +30,10 @@ class Server:
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        cls.app.add_middleware(AuthMiddleware)
+        if Config.APP_TYPE == "scheduler":
+            cls.app.add_middleware(SchedulerAuthMiddleware)
+        else:
+            cls.app.add_middleware(AuthMiddleware)
 
     @classmethod
     def create_app(cls):
