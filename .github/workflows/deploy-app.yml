@@ -45,6 +45,8 @@ jobs:
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
       CACHE_TOKEN: ${{ secrets.CACHE_TOKEN }}
       CACHE_ENDPOINT: ${{ secrets.CACHE_ENDPOINT }}
+      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+      SCHEDULER_SECRET: ${{ secrets.SCHEDULER_SECRET }}
 
     steps:
       - name: Checkout code
@@ -80,6 +82,8 @@ jobs:
               DiscordBotToken=${{ env.DISCORD_BOT_TOKEN }} \
               CacheToken=${{ env.CACHE_TOKEN }} \
               CacheEndpoint=${{ env.CACHE_ENDPOINT }} \
+              MISTRAL_API_KEY=${{ env.MISTRAL_API_KEY }} \
+              SCHEDULER_SECRET=${{ env.SCHEDULER_SECRET }} \
               LambdaExecutionRoleArn=${{ env.LambdaExecutionRoleArn }}
 
       - name: Get API URL
