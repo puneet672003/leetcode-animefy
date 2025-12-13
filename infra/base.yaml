@@ -32,7 +32,7 @@ Resources:
   UserGuildStatsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub "${RepoName}-db-user-stats-v2"
+      TableName: !Sub "${RepoName}-db-user-stats"
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: guild_id
