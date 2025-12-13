@@ -37,6 +37,8 @@ Resources:
           BOT_TOKEN: !Ref DiscordBotToken
           CACHE_TOKEN: !Ref CacheToken
           CACHE_ENDPOINT: !Ref CacheEndpoint
+          MISTRAL_API_KEY: !Ref MistralApiKey
+          SCHEDULER_SECRET: !Ref SchedulerSecret
 
   # Scheduler Lambda Function
   SchedulerLambda:
