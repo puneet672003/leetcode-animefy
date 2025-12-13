@@ -117,11 +117,14 @@ class DiscordBot:
         return manageable
 
     @classmethod
-    async def send_webhook_message(cls, webhook_id: str, content: str):
+    async def send_webhook_message(cls, webhook_id: str, content: str = None, embed: discord.Embed = None):
+        if not content and not embed:
+             raise DiscordClientException("Message must have content or embed", status_code=400)
+
         bot = await cls._get_bot()
         try:
             webhook = await bot.fetch_webhook(int(webhook_id))
-            await webhook.send(content=content)
+            await webhook.send(content=content, embed=embed)
         except discord.NotFound:
             raise DiscordClientException("Webhook not found", status_code=404)
         except discord.HTTPException as e:
