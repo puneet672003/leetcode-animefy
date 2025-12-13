@@ -82,8 +82,8 @@ jobs:
               DiscordBotToken=${{ env.DISCORD_BOT_TOKEN }} \
               CacheToken=${{ env.CACHE_TOKEN }} \
               CacheEndpoint=${{ env.CACHE_ENDPOINT }} \
-              MISTRAL_API_KEY=${{ env.MISTRAL_API_KEY }} \
-              SCHEDULER_SECRET=${{ env.SCHEDULER_SECRET }} \
+              MistralApiKey=${{ env.MISTRAL_API_KEY }} \
+              SchedulerSecret=${{ env.SCHEDULER_SECRET }} \
               LambdaExecutionRoleArn=${{ env.LambdaExecutionRoleArn }}
 
       - name: Get API URL
