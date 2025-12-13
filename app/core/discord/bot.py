@@ -115,3 +115,15 @@ class DiscordBot:
                     )
 
         return manageable
+
+    @classmethod
+    async def send_webhook_message(cls, webhook_id: str, content: str):
+        bot = await cls._get_bot()
+        try:
+            webhook = await bot.fetch_webhook(int(webhook_id))
+            await webhook.send(content=content)
+        except discord.NotFound:
+            raise DiscordClientException("Webhook not found", status_code=404)
+        except discord.HTTPException as e:
+            Logger.warning(f"[DISCORD] Failed to send webhook message: {e}")
+            raise DiscordClientException(f"Failed to send message: {e}", status_code=500)

@@ -1,10 +1,11 @@
 from fastapi import HTTPException
 
 from core.logger import Logger
+from core.discord.bot import DiscordBot
 from models.guild import ParsedSlot
 from models.discord import DiscordClientException
-from core.discord.bot import DiscordBot
 from managers.guild_data import GuildManager
+from services import leetcode_service, plot_service
 
 
 async def add_guild(guild_id: str):
@@ -72,6 +73,29 @@ async def remove_user(guild_id: str, username: str):
 
 async def run_slot_jobs(slot: ParsedSlot):
     guilds = await GuildManager.get_guilds_by_slot(f"{slot.hh}:{slot.mm}")
+    
     if guilds and len(guilds) > 0:
         for guild in guilds:
-            Logger.info(f"Running for {guild}")
+            Logger.info(f"Running for {guild.guild_id}")
+            if not guild.webhook_id:
+                Logger.warning(f"No webhook configured for guild {guild.guild_id}, skipping.")
+                continue
+
+            users_progress = []
+            for username in guild.leetcode_users:
+                try:
+                    progress = await leetcode_service.get_user_progress(username)
+                    users_progress.append(progress)
+                except Exception as e:
+                    Logger.error(f"Failed to fetch progress for {username} in guild {guild.guild_id}: {e}")
+            
+            if not users_progress:
+                Logger.info(f"No valid user data for guild {guild.guild_id}, skipping plot generation.")
+                continue
+
+            try:
+                scene = await plot_service.generate_battle_scene(users_progress)
+                await DiscordBot.send_webhook_message(guild.webhook_id, scene)
+                Logger.info(f"Sent battle scene to guild {guild.guild_id}")
+            except Exception as e:
+                Logger.error(f"Failed to generate/send battle scene for guild {guild.guild_id}: {e}")

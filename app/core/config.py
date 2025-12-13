@@ -27,3 +27,5 @@ class Config:
     SERVER_HOST = _get_env("UVICORN_HOST", default="localhost")
     SERVER_PORT = int(_get_env("UVICORN_PORT", default="8000"))
     DEVELOPMENT = _get_env("DEVELOPMENT", default="false").lower() == "true"
+    # llm
+    MISTRAL_API_KEY = _get_env("MISTRAL_API_KEY", required=True)
