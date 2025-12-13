@@ -28,6 +28,23 @@ Resources:
           Projection:
             ProjectionType: ALL
 
+  # DynamoDB Table - User Stats (Guild Scoped)
+  UserGuildStatsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${RepoName}-db-user-stats-v2"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: guild_id
+          AttributeType: S
+        - AttributeName: username
+          AttributeType: S
+      KeySchema:
+        - AttributeName: guild_id
+          KeyType: HASH
+        - AttributeName: username
+          KeyType: RANGE
+
   # ECR Repo
   EcrRepo:
     Type: AWS::ECR::Repository

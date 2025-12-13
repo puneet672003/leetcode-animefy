@@ -1,5 +1,6 @@
 {
   "prompts": {
-    "battle": "battle.txt"
+    "battle": "battle.txt",
+    "intro": "intro.txt"
   }
 }
