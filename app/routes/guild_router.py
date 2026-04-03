@@ -1,10 +1,16 @@
 from fastapi import APIRouter, Depends
 
-from middlewares.guild_dependency import verify_guild_access
+from middlewares.guild_dependency import get_session_data, verify_guild_access
+from models.auth import SessionData
 from models.guild import ScheduleInput, UpdateGuildInput, UpdateGuildUserInput
 from services import guild_service
 
 guild_router = APIRouter()
+
+
+@guild_router.get("/")
+async def get_guilds(session_data: SessionData = Depends(get_session_data)):
+    return await guild_service.get_user_guilds(session_data)
 
 
 @guild_router.post("/{guild_id}")

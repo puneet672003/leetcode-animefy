@@ -1,4 +1,5 @@
 import discord
+import httpx
 
 from core.config import Config
 from core.logger import Logger
@@ -24,6 +25,23 @@ class DiscordBot:
                 raise DiscordClientException("Bot login failed", status_code=401)
 
         return cls._bot
+
+    @classmethod
+    async def fetch_guild_ids(cls) -> set[str]:
+        try:
+            async with httpx.AsyncClient(
+                base_url="https://discord.com/api",
+                headers={"Authorization": f"Bot {Config.BOT_TOKEN}"},
+            ) as client:
+                response = await client.get("/users/@me/guilds")
+                if response.status_code == 200:
+                    return {g["id"] for g in response.json()}
+                Logger.warning(
+                    f"[DISCORD] Failed to fetch bot guilds: {response.status_code}"
+                )
+        except httpx.RequestError as e:
+            Logger.error(f"[DISCORD] Request error (bot guilds): {e}")
+        return set()
 
     @classmethod
     async def close(cls):

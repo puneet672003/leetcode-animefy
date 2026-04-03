@@ -47,6 +47,15 @@ class GuildManager:
         return GuildData(**updated) if updated else None
 
     @staticmethod
+    async def clear_webhook_id(guild_id: str) -> None:
+        await DBClient.update_item(
+            GuildManager.table_name,
+            {"guild_id": guild_id},
+            "REMOVE webhook_id",
+            {},
+        )
+
+    @staticmethod
     async def add_leetcode_user(guild_id: str, username: str) -> GuildData | None:
         guild = await GuildManager.get_guild(guild_id)
         if not guild:

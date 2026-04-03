@@ -3,7 +3,7 @@ from core.database import DBClient
 
 
 class LeetCodeManager:
-    table_name = f"{Config.REPO_NAME}-db-user-stats-v2"
+    table_name = f"{Config.REPO_NAME}-db-user-stats"
 
     @classmethod
     async def get_user_stats(cls, guild_id: str, username: str) -> dict | None:

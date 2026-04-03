@@ -4,6 +4,15 @@ from core.logger import Logger
 from models.auth import SessionData
 
 
+async def get_session_data(request: Request) -> SessionData:
+    if not getattr(request.state, "is_authenticated", False):
+        raise HTTPException(status_code=401, detail="Authentication required")
+    session_data: SessionData = getattr(request.state, "session_data", None)
+    if not session_data:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    return session_data
+
+
 async def verify_guild_access(request: Request, guild_id: str = Path(...)) -> str:
     if not guild_id.isdigit():
         raise HTTPException(status_code=400, detail="guild_id must be a number string")

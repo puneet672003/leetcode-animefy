@@ -64,6 +64,6 @@ async def generate_scene(
     plot = await LLMClient.a_generate(system_prompt, context)
     return {
         "plot": plot,
-        "winner": stats["winner"] if prompt_name == "battle" else "None",
-        "leaderboard": stats["leaderboard"] if prompt_name == "battle" else "None",
+        "winner": stats["winner"],
+        "leaderboard": stats["leaderboard"],
     }
