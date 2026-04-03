@@ -1,5 +1,4 @@
 import secrets
-from typing import Optional
 
 from core.cache import CacheStore
 from models.auth import SessionData
@@ -11,9 +10,7 @@ class SessionManager:
         return secrets.token_urlsafe(32)
 
     @staticmethod
-    async def create_session(
-        session_data: SessionData, ex: int = 3600
-    ) -> Optional[str]:
+    async def create_session(session_data: SessionData, ex: int = 3600) -> str | None:
         session_id = SessionManager._generate_session_id()
         session_json = session_data.model_dump_json()
 
@@ -28,7 +25,7 @@ class SessionManager:
         return await CacheStore.set_cache(session_id, session_json, ex)
 
     @staticmethod
-    async def get_session(session_id: str) -> Optional[SessionData]:
+    async def get_session(session_id: str) -> SessionData | None:
         session_json = await CacheStore.get_cache(session_id)
         return SessionData.model_validate_json(session_json) if session_json else None
 

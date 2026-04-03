@@ -1,7 +1,6 @@
-from typing import List
 from pydantic import BaseModel, Field
 
-from models.discord import UserInfo, GuildInfo
+from models.discord import GuildInfo, UserInfo
 
 
 class TokenData(BaseModel):
@@ -12,4 +11,4 @@ class TokenData(BaseModel):
 class SessionData(BaseModel):
     user: UserInfo
     token: TokenData
-    guilds: List[GuildInfo] = Field(default_factory=list)
+    guilds: list[GuildInfo] = Field(default_factory=list)

@@ -1,9 +1,8 @@
 from fastapi import APIRouter
-from routes.guild_router import guild_router
-from routes.schedule_router import schedule_router
 
 from core.config import Config
-
+from routes.guild_router import guild_router
+from routes.schedule_router import schedule_router
 
 global_router = APIRouter(prefix="/api")
 

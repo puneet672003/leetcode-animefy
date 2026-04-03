@@ -1,8 +1,7 @@
 import httpx
-from typing import List, Optional
 
 from core.logger import Logger
-from models.discord import UserInfo, GuildInfo
+from models.discord import GuildInfo, UserInfo
 
 
 class DiscordUser:
@@ -22,7 +21,7 @@ class DiscordUser:
     async def __aexit__(self, *args):
         await self.close()
 
-    async def fetch_user(self) -> Optional[UserInfo]:
+    async def fetch_user(self) -> UserInfo | None:
         try:
             response = await self.client.get("/users/@me")
             if response.status_code == 200:
@@ -42,7 +41,7 @@ class DiscordUser:
             Logger.error(f"[DISCORD] Request error (user): {e}")
         return None
 
-    async def fetch_manageable_guilds(self) -> List[GuildInfo]:
+    async def fetch_manageable_guilds(self) -> list[GuildInfo]:
         try:
             response = await self.client.get("/users/@me/guilds")
             if response.status_code == 200:

@@ -1,6 +1,8 @@
 from datetime import datetime
-from fastapi import HTTPException, Request, Body
-from models.guild import ParsedSlot, ScheduleInput
+
+from fastapi import Body, HTTPException, Request
+
+from models.guild import ScheduleInput
 
 
 async def verify_scheduler_access(request: Request) -> None:

@@ -1,5 +1,6 @@
+from typing import Any
+
 from boto3 import resource, resources
-from typing import Dict, Any, Optional
 from fastapi.concurrency import run_in_threadpool
 
 from core.config import Config
@@ -16,14 +17,14 @@ class DBClient:
         return cls._dynamodb.Table(table_name)
 
     @classmethod
-    async def put_item(cls, table_name: str, item: Dict[str, Any]) -> None:
+    async def put_item(cls, table_name: str, item: dict[str, Any]) -> None:
         table = cls._get_table(table_name)
         await run_in_threadpool(table.put_item, Item=item)
 
     @classmethod
     async def get_item(
-        cls, table_name: str, key: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        cls, table_name: str, key: dict[str, Any]
+    ) -> dict[str, Any] | None:
         table = cls._get_table(table_name)
         response = await run_in_threadpool(table.get_item, Key=key)
         return response.get("Item")
@@ -32,10 +33,10 @@ class DBClient:
     async def query(
         cls,
         table_name: str,
-        index_name: Optional[str],
+        index_name: str | None,
         key_condition: str,
-        values: Dict[str, Any],
-    ) -> list[Dict[str, Any]]:
+        values: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         table = cls._get_table(table_name)
 
         kwargs = {
@@ -53,10 +54,10 @@ class DBClient:
     async def update_item(
         cls,
         table_name: str,
-        key: Dict[str, Any],
+        key: dict[str, Any],
         update_expression: str,
-        expression_attribute_values: Dict[str, Any],
-    ) -> Optional[Dict[str, Any]]:
+        expression_attribute_values: dict[str, Any],
+    ) -> dict[str, Any] | None:
         table = cls._get_table(table_name)
         response = await run_in_threadpool(
             table.update_item,

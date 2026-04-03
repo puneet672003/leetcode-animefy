@@ -1,13 +1,13 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import Config
 from core.discord.bot import DiscordBot
-
-from routes import global_router
 from middlewares.auth_middleware import AuthMiddleware, SchedulerAuthMiddleware
+from routes import global_router
 
 
 class Server:

@@ -1,10 +1,9 @@
-from typing import Optional
 from pydantic import BaseModel
 
 
 class UserInfo(BaseModel):
     username: str
-    avatar: Optional[str] = None
+    avatar: str | None = None
 
 
 class WebhookInfo(BaseModel):
@@ -21,11 +20,11 @@ class ChannelInfo(BaseModel):
 class GuildInfo(BaseModel):
     id: str
     name: str
-    icon: Optional[str] = None
+    icon: str | None = None
 
 
 class DiscordClientException(Exception):
-    def __init__(self, message: str, status_code: Optional[int] = 500):
+    def __init__(self, message: str, status_code: int | None = 500):
         self.message = message
         self.status_code = status_code
         super().__init__(message)

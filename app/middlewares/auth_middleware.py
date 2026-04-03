@@ -1,13 +1,14 @@
 import secrets
-from fastapi import Request
-from starlette.requests import HTTPConnection
-from starlette.middleware.base import BaseHTTPMiddleware
 
-from core.logger import Logger
+from fastapi import Request
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import HTTPConnection
+
 from core.config import Config
-from models.auth import SessionData
 from core.discord.user import DiscordUser
+from core.logger import Logger
 from managers.session_data import SessionManager
+from models.auth import SessionData
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -94,10 +95,10 @@ class SchedulerAuthMiddleware(BaseHTTPMiddleware):
             token = header.split(" ", 1)[1]
             if secrets.compare_digest(token, Config.SCHEDULER_SECRET):
                 request.state.is_scheduler_authenticated = True
-                Logger.info(f"[SCHEDULER AUTH] Authentication successfull")
+                Logger.info("[SCHEDULER AUTH] Authentication successfull")
             else:
-                Logger.warning(f"[SCHEDULER AUTH] Incorrect token")
+                Logger.warning("[SCHEDULER AUTH] Incorrect token")
         else:
-            Logger.warning(f"[SCHEDULER AUTH] Invalid token")
+            Logger.warning("[SCHEDULER AUTH] Invalid token")
 
         return await call_next(request)

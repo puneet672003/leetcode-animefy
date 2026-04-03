@@ -1,13 +1,13 @@
 import asyncio
+
 from dotenv import load_dotenv
 
 # loading environment variables
 load_dotenv()
 
-from core.config import Config
-from core.logger import Logger
-from core.server import Server
-
+from core.config import Config  # noqa
+from core.logger import Logger  # noqa
+from core.server import Server  # noqa
 
 if __name__ == "__main__" and Config.DEVELOPMENT:
     try:

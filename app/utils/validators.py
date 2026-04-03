@@ -7,7 +7,7 @@ def validate_slot_str(v: str):
 
     hour, minute = v.split(":")
     if not hour.isdigit() or not minute.isdigit():
-        return ValueError("HH and MM should be digits")
+        raise ValueError("HH and MM should be digits")
 
     hour = int(hour)
     minute = int(minute)

@@ -1,4 +1,3 @@
-from typing import Optional
 from upstash_redis.asyncio import Redis
 
 from core.config import Config
@@ -20,7 +19,7 @@ class CacheStore:
         return await cls._get_client().set(key, value, ex=ex)
 
     @classmethod
-    async def get_cache(cls, key: str) -> Optional[str]:
+    async def get_cache(cls, key: str) -> str | None:
         return await cls._get_client().get(key)
 
     @classmethod

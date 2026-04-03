@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Depends
 
+from middlewares.scheduler_dependency import resolve_slot, verify_scheduler_access
 from models.guild import ScheduleInput
 from services.guild_service import run_slot_jobs
-from middlewares.scheduler_dependency import verify_scheduler_access, resolve_slot
 
 schedule_router = APIRouter(dependencies=[Depends(verify_scheduler_access)])
 

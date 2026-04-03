@@ -1,16 +1,17 @@
-from datetime import datetime
+from typing import Literal
+
 from fastapi import HTTPException
-from typing import List, Optional, Literal
 from pydantic import BaseModel, Field, field_validator
+
 from utils.validators import validate_slot_str
 
 
 class GuildData(BaseModel):
     guild_id: str
-    slot: Optional[str] = None
-    channel_id: Optional[str] = None
-    webhook_id: Optional[str] = None
-    leetcode_users: List[str] = Field(default_factory=list)
+    slot: str | None = None
+    channel_id: str | None = None
+    webhook_id: str | None = None
+    leetcode_users: list[str] = Field(default_factory=list)
 
     class Config:
         validate_by_name = True

@@ -1,12 +1,13 @@
 import discord
 from fastapi import HTTPException
 
-from core.logger import Logger
 from core.discord.bot import DiscordBot
-from models.guild import ParsedSlot
-from models.discord import DiscordClientException
+from core.logger import Logger
 from managers.guild_data import GuildManager
 from managers.leetcode_manager import LeetCodeManager
+from models.discord import DiscordClientException
+from models.guild import ParsedSlot
+from models.leetcode import UserProgress
 from services import leetcode_service, plot_service
 
 
@@ -75,24 +76,35 @@ async def remove_user(guild_id: str, username: str):
 
 async def run_slot_jobs(slot: ParsedSlot):
     guilds = await GuildManager.get_guilds_by_slot(f"{slot.hh}:{slot.mm}")
-    
+
     if guilds and len(guilds) > 0:
         for guild in guilds:
             Logger.info(f"Running for {guild.guild_id}")
             if not guild.webhook_id:
-                Logger.warning(f"No webhook configured for guild {guild.guild_id}, skipping.")
+                Logger.warning(
+                    f"No webhook configured for guild {guild.guild_id}, skipping."
+                )
                 continue
 
             improvement_map = {}
-            veterans: List[UserProgress] = []
-            recruits: List[UserProgress] = []
+            veterans: list[UserProgress] = []
+            recruits: list[UserProgress] = []
 
             for username in guild.leetcode_users:
                 try:
                     progress = await leetcode_service.get_user_progress(username)
                     current_total = sum(d.count for d in progress.progress)
-                    
-                    stats = await LeetCodeManager.get_user_stats(guild.guild_id, username)
+
+                    try:
+                        stats = await LeetCodeManager.get_user_stats(
+                            guild.guild_id, username
+                        )
+                    except Exception as e:
+                        Logger.warning(
+                            f"Failed to get user stats for {username} in guild {guild.guild_id}: {e}"
+                        )
+                        stats = None
+
                     if stats:
                         last_count = int(stats.get("last_count", 0))
                         delta = current_total - last_count
@@ -100,11 +112,15 @@ async def run_slot_jobs(slot: ParsedSlot):
                         veterans.append(progress)
                     else:
                         recruits.append(progress)
-                    
-                    await LeetCodeManager.update_user_stats(guild.guild_id, username, current_total)
+
+                    await LeetCodeManager.update_user_stats(
+                        guild.guild_id, username, current_total
+                    )
 
                 except Exception as e:
-                     Logger.error(f"Failed to fetch/update progress for {username} in guild {guild.guild_id}: {e}")
+                    Logger.error(
+                        f"Failed to fetch/update progress for {username} in guild {guild.guild_id}: {e}"
+                    )
 
             if not veterans and not recruits:
                 Logger.info(f"No valid user data for guild {guild.guild_id}, skipping.")
@@ -112,47 +128,73 @@ async def run_slot_jobs(slot: ParsedSlot):
 
             try:
                 if len(veterans) > 1:
-                    result = await plot_service.generate_battle_scene(veterans, improvement_map, prompt_name="battle")
+                    result = await plot_service.generate_scene(
+                        veterans, improvement_map, prompt_name="battle"
+                    )
                     embed = discord.Embed(
                         title="⚔️ LeetCode Battle Results ⚔️",
                         description=result["plot"],
-                        color=discord.Color.brand_red()
+                        color=discord.Color.brand_red(),
                     )
-                    embed.add_field(name="🏆 Winner", value=f"**{result['winner']}**", inline=True)
-                    embed.add_field(name="📊 Leaderboard", value=result["leaderboard"], inline=True)
-                    
+                    embed.add_field(
+                        name="🏆 Winner", value=f"**{result['winner']}**", inline=True
+                    )
+                    embed.add_field(
+                        name="📊 Leaderboard", value=result["leaderboard"], inline=True
+                    )
+
                     if recruits:
                         recruit_names = ", ".join([f"`{u.username}`" for u in recruits])
-                        embed.add_field(name="New Challengers Appears for Next Battle", value=recruit_names, inline=False)
-                        
+                        embed.add_field(
+                            name="New Challengers Appears for Next Battle",
+                            value=recruit_names,
+                            inline=False,
+                        )
+
                     embed.set_footer(text="Generated by Animefy Bot")
                     await DiscordBot.send_webhook_message(guild.webhook_id, embed=embed)
 
                 elif len(veterans) == 1:
-                    result = await plot_service.generate_battle_scene(veterans, improvement_map, prompt_name="solo")
+                    result = await plot_service.generate_scene(
+                        veterans, improvement_map, prompt_name="solo"
+                    )
                     embed = discord.Embed(
                         title="⚔️ LeetCode Solo Battle Results ⚔️",
                         description=result["plot"],
-                        color=discord.Color.brand_red()
+                        color=discord.Color.brand_red(),
                     )
-                    embed.add_field(name="🏆 Improvement", value=f"**{result['winner']}**", inline=False    )
+                    embed.add_field(
+                        name="🏆 Improvement",
+                        value=f"**{result['winner']}**",
+                        inline=False,
+                    )
                     embed.set_footer(text="Generated by Animefy Bot")
                     await DiscordBot.send_webhook_message(guild.webhook_id, embed=embed)
 
                 elif len(recruits) > 0:
-                    result = await plot_service.generate_battle_scene(recruits, prompt_name="intro")
+                    result = await plot_service.generate_scene(
+                        recruits, prompt_name="intro"
+                    )
                     embed = discord.Embed(
                         title="🔥 A New Era Begins... 🔥",
                         description=result["plot"],
-                        color=discord.Color.gold()
+                        color=discord.Color.gold(),
                     )
                     recruit_names = ", ".join([f"**{u.username}**" for u in recruits])
-                    embed.add_field(name="🌟 The Founding Warriors", value=recruit_names, inline=False)
-                    embed.set_footer(text="Stats are being recorded. The first battle begins tomorrow!")
+                    embed.add_field(
+                        name="🌟 The Founding Warriors",
+                        value=recruit_names,
+                        inline=False,
+                    )
+                    embed.set_footer(
+                        text="Stats are being recorded. The first battle begins tomorrow!"
+                    )
 
                     await DiscordBot.send_webhook_message(guild.webhook_id, embed=embed)
 
                 Logger.info(f"Sent output to guild {guild.guild_id}")
 
             except Exception as e:
-                Logger.error(f"Failed to generate/send content for guild {guild.guild_id}: {e}")
+                Logger.error(
+                    f"Failed to generate/send content for guild {guild.guild_id}: {e}"
+                )

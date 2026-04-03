@@ -1,9 +1,8 @@
 import discord
-from typing import List
 
 from core.config import Config
 from core.logger import Logger
-from models.discord import WebhookInfo, ChannelInfo, DiscordClientException
+from models.discord import ChannelInfo, DiscordClientException, WebhookInfo
 
 
 class DiscordBot:
@@ -100,7 +99,7 @@ class DiscordBot:
         return WebhookInfo(id=str(webhook.id), name=webhook.name, url=webhook.url)
 
     @classmethod
-    async def get_manageable_channels(cls, guild_id: str) -> List[ChannelInfo]:
+    async def get_manageable_channels(cls, guild_id: str) -> list[ChannelInfo]:
         guild = await cls._fetch_guild(int(guild_id))
         bot_member = await cls._fetch_member(guild)
         channels = await guild.fetch_channels()
@@ -117,9 +116,13 @@ class DiscordBot:
         return manageable
 
     @classmethod
-    async def send_webhook_message(cls, webhook_id: str, content: str = None, embed: discord.Embed = None):
+    async def send_webhook_message(
+        cls, webhook_id: str, content: str = None, embed: discord.Embed = None
+    ):
         if not content and not embed:
-             raise DiscordClientException("Message must have content or embed", status_code=400)
+            raise DiscordClientException(
+                "Message must have content or embed", status_code=400
+            )
 
         bot = await cls._get_bot()
         try:
@@ -129,4 +132,6 @@ class DiscordBot:
             raise DiscordClientException("Webhook not found", status_code=404)
         except discord.HTTPException as e:
             Logger.warning(f"[DISCORD] Failed to send webhook message: {e}")
-            raise DiscordClientException(f"Failed to send message: {e}", status_code=500)
+            raise DiscordClientException(
+                f"Failed to send message: {e}", status_code=500
+            )

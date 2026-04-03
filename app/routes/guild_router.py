@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends
 
-from services import guild_service
 from middlewares.guild_dependency import verify_guild_access
-from models.guild import ScheduleInput
-from models.guild import UpdateGuildInput, UpdateGuildUserInput
+from models.guild import ScheduleInput, UpdateGuildInput, UpdateGuildUserInput
+from services import guild_service
 
 guild_router = APIRouter()
 

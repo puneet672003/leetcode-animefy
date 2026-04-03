@@ -1,0 +1,7 @@
+[tool.ruff]
+src = ["app"]
+exclude = ["app/venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "SIM"]
+ignore = ["E501"]

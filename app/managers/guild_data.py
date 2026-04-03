@@ -1,5 +1,3 @@
-from typing import Optional
-
 from core.database import DBClient
 from models.guild import GuildData
 from utils.naming import get_full_table_name
@@ -9,7 +7,7 @@ class GuildManager:
     table_name = get_full_table_name("guilds")
 
     @staticmethod
-    async def get_guild(guild_id: str) -> Optional[GuildData]:
+    async def get_guild(guild_id: str) -> GuildData | None:
         doc = await DBClient.get_item(GuildManager.table_name, {"guild_id": guild_id})
         return GuildData(**doc) if doc else None
 
@@ -29,7 +27,7 @@ class GuildManager:
             return doc
 
     @staticmethod
-    async def set_channel_id(guild_id: str, channel_id: str) -> Optional[GuildData]:
+    async def set_channel_id(guild_id: str, channel_id: str) -> GuildData | None:
         updated = await DBClient.update_item(
             GuildManager.table_name,
             {"guild_id": guild_id},
@@ -39,7 +37,7 @@ class GuildManager:
         return GuildData(**updated) if updated else None
 
     @staticmethod
-    async def set_webhook_id(guild_id: str, webhook_id: str) -> Optional[GuildData]:
+    async def set_webhook_id(guild_id: str, webhook_id: str) -> GuildData | None:
         updated = await DBClient.update_item(
             GuildManager.table_name,
             {"guild_id": guild_id},
@@ -49,7 +47,7 @@ class GuildManager:
         return GuildData(**updated) if updated else None
 
     @staticmethod
-    async def add_leetcode_user(guild_id: str, username: str) -> Optional[GuildData]:
+    async def add_leetcode_user(guild_id: str, username: str) -> GuildData | None:
         guild = await GuildManager.get_guild(guild_id)
         if not guild:
             return None
@@ -59,7 +57,7 @@ class GuildManager:
         return guild
 
     @staticmethod
-    async def remove_leetcode_user(guild_id: str, username: str) -> Optional[GuildData]:
+    async def remove_leetcode_user(guild_id: str, username: str) -> GuildData | None:
         guild = await GuildManager.get_guild(guild_id)
         if not guild:
             return None
@@ -69,7 +67,7 @@ class GuildManager:
         return guild
 
     @staticmethod
-    async def set_slot(guild_id: str, slot: str) -> Optional[GuildData]:
+    async def set_slot(guild_id: str, slot: str) -> GuildData | None:
         updated = await DBClient.update_item(
             GuildManager.table_name,
             {"guild_id": guild_id},
@@ -79,7 +77,7 @@ class GuildManager:
         return GuildData(**updated) if updated else None
 
     @staticmethod
-    async def clear_slot(guild_id: str) -> Optional[GuildData]:
+    async def clear_slot(guild_id: str) -> GuildData | None:
         updated = await DBClient.update_item(
             GuildManager.table_name,
             {"guild_id": guild_id},

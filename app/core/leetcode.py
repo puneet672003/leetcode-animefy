@@ -1,5 +1,6 @@
+from typing import Any
+
 import httpx
-from typing import Optional, Any, Dict
 
 from core.logger import Logger
 
@@ -13,7 +14,7 @@ class LeetCodeClientException(Exception):
 
 class LeetCodeClient:
     URL = "https://leetcode.com/graphql/"
-    _client: Optional[httpx.AsyncClient] = None
+    _client: httpx.AsyncClient | None = None
 
     @classmethod
     def _get_client(cls) -> httpx.AsyncClient:
@@ -24,7 +25,7 @@ class LeetCodeClient:
     @classmethod
     async def _make_request(
         cls, query: str, variables: dict, operation_name: str, username: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         payload = {
             "operationName": operation_name,
             "query": query,
@@ -38,7 +39,9 @@ class LeetCodeClient:
 
         client = cls._get_client()
         try:
-            response = await client.post(cls.URL, json=payload, headers=headers, timeout=10)
+            response = await client.post(
+                cls.URL, json=payload, headers=headers, timeout=10
+            )
             response.raise_for_status()
         except httpx.HTTPError as e:
             Logger.error(f"[LEETCODE] HTTP error for {username}: {e}")
@@ -47,15 +50,17 @@ class LeetCodeClient:
         try:
             data = response.json()
             if "errors" in data:
-                    Logger.warning(f"[LEETCODE] GraphQL errors for {username}: {data['errors']}")
-                    raise LeetCodeClientException("GraphQL error", status_code=400)
+                Logger.warning(
+                    f"[LEETCODE] GraphQL errors for {username}: {data['errors']}"
+                )
+                raise LeetCodeClientException("GraphQL error", status_code=400)
             return data["data"]
         except ValueError:
             Logger.error(f"[LEETCODE] Invalid JSON response for {username}")
             raise LeetCodeClientException("Invalid JSON response", status_code=502)
 
     @classmethod
-    async def get_question_progress(cls, username: str) -> Dict[str, Any]:
+    async def get_question_progress(cls, username: str) -> dict[str, Any]:
         query = """
         query userProfileUserQuestionProgressV2($userSlug: String!) {
           userProfileUserQuestionProgressV2(userSlug: $userSlug) {
@@ -71,11 +76,13 @@ class LeetCodeClient:
             query=query,
             variables={"userSlug": username},
             operation_name="userProfileUserQuestionProgressV2",
-            username=username
+            username=username,
         )
 
         try:
             return data["userProfileUserQuestionProgressV2"]["numAcceptedQuestions"]
         except (KeyError, TypeError):
-             Logger.error(f"[LEETCODE] Unexpected response structure for {username}: {data}")
-             raise LeetCodeClientException("Unexpected response format", status_code=502)
+            Logger.error(
+                f"[LEETCODE] Unexpected response structure for {username}: {data}"
+            )
+            raise LeetCodeClientException("Unexpected response format", status_code=502)

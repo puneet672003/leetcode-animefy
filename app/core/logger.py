@@ -1,5 +1,6 @@
-import logging
 import inspect
+import logging
+
 from rich.console import Console
 from rich.traceback import Traceback
 

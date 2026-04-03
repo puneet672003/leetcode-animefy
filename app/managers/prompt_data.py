@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 from core.logger import Logger
 
@@ -7,7 +7,7 @@ from core.logger import Logger
 class PromptManager:
     _prompt_cache = {}
     _is_initialized = False
-    
+
     @classmethod
     def _init_manager(cls, prompts_folder="prompts", config_name="config.json"):
         if cls._is_initialized:
@@ -24,8 +24,8 @@ class PromptManager:
     @staticmethod
     def _load_prompt_config(config_path):
         if not os.path.exists(config_path):
-             return {}
-        with open(config_path, "r") as f:
+            return {}
+        with open(config_path) as f:
             config = json.load(f)
         return config.get("prompts", {})
 
@@ -35,7 +35,7 @@ class PromptManager:
         for name, rel_path in prompt_map.items():
             full_path = os.path.join(prompt_dir, rel_path)
             if os.path.exists(full_path):
-                with open(full_path, "r", encoding="utf-8") as f:
+                with open(full_path, encoding="utf-8") as f:
                     prompt_cache[name] = f.read()
             else:
                 Logger.warning(f"Prompt file not found: {full_path}")
@@ -47,7 +47,7 @@ class PromptManager:
     def get_prompt(cls, name) -> str:
         if not cls._is_initialized:
             cls._init_manager()
-            
+
         if name not in cls._prompt_cache:
             raise ValueError(f"Prompt '{name}' not found in loaded cache.")
         return cls._prompt_cache[name]

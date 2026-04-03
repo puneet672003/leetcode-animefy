@@ -1,4 +1,4 @@
-from fastapi import Request, HTTPException, Path
+from fastapi import HTTPException, Path, Request
 
 from core.logger import Logger
 from models.auth import SessionData
