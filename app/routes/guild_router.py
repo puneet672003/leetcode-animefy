@@ -8,7 +8,7 @@ from services import guild_service
 guild_router = APIRouter()
 
 
-@guild_router.get("/")
+@guild_router.get("")
 async def get_guilds(session_data: SessionData = Depends(get_session_data)):
     return await guild_service.get_user_guilds(session_data)
 
