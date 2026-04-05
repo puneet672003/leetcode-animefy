@@ -44,7 +44,10 @@ class Server:
                 yield
                 await DiscordBot.close()
 
-            cls.app = FastAPI(lifespan=lifespan if Config.DEVELOPMENT else "off")
+            cls.app = FastAPI(
+                lifespan=lifespan if Config.DEVELOPMENT else "off",
+                redirect_slashes=False,
+            )
 
         cls.setup_middleware()
         cls.setup_routes()

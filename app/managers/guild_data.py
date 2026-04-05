@@ -62,7 +62,9 @@ class GuildManager:
             return None
         if username not in guild.leetcode_users:
             guild.leetcode_users.append(username)
-            await DBClient.put_item(GuildManager.table_name, guild.model_dump())
+            await DBClient.put_item(
+                GuildManager.table_name, guild.model_dump(exclude_none=True)
+            )
         return guild
 
     @staticmethod
@@ -72,7 +74,9 @@ class GuildManager:
             return None
         if username in guild.leetcode_users:
             guild.leetcode_users.remove(username)
-            await DBClient.put_item(GuildManager.table_name, guild.model_dump())
+            await DBClient.put_item(
+                GuildManager.table_name, guild.model_dump(exclude_none=True)
+            )
         return guild
 
     @staticmethod

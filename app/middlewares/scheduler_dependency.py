@@ -18,7 +18,8 @@ async def resolve_slot(body: dict | None = Body(default=None)):
     slot_str = None
     if not body or "slot" not in body:
         now = datetime.now()
-        slot_str = f"{now.hour if now.hour > 9 else f'0{now.hour}'}:{'00' if now.minute < 30 else '30'}"
+        rounded_minute = (now.minute // 15) * 15
+        slot_str = f"{now.hour:02d}:{rounded_minute:02d}"
     else:
         slot_str = body["slot"]
 

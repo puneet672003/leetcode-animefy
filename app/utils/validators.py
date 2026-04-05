@@ -9,12 +9,9 @@ def validate_slot_str(v: str):
     if not hour.isdigit() or not minute.isdigit():
         raise ValueError("HH and MM should be digits")
 
-    hour = int(hour)
-    minute = int(minute)
-
-    if hour < 0 or hour > 23:
+    if int(hour) < 0 or int(hour) > 23:
         raise ValueError("HH must be between 00 and 23")
-    if minute not in (0, 30):
-        raise ValueError("MM must be 00 or 30")
+    if int(minute) not in (0, 15, 30, 45):
+        raise ValueError("MM must be 00, 15, 30, or 45")
 
     return hour, minute

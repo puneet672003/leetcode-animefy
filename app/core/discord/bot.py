@@ -134,6 +134,17 @@ class DiscordBot:
         return manageable
 
     @classmethod
+    async def delete_webhook(cls, webhook_id: str):
+        bot = await cls._get_bot()
+        try:
+            webhook = await bot.fetch_webhook(int(webhook_id))
+            await webhook.delete()
+        except discord.NotFound:
+            pass
+        except discord.HTTPException as e:
+            Logger.warning(f"[DISCORD] Failed to delete webhook {webhook_id}: {e}")
+
+    @classmethod
     async def send_webhook_message(
         cls, webhook_id: str, content: str = None, embed: discord.Embed = None
     ):

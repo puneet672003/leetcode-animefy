@@ -19,8 +19,8 @@ class GuildData(BaseModel):
 
 
 class ParsedSlot(BaseModel):
-    hh: int
-    mm: int
+    hh: str
+    mm: str
 
 
 class UpdateGuildInput(BaseModel):

@@ -1,4 +1,4 @@
-# LeetCode Animefy
+# LeetJutsu
 
 A Discord bot that tracks your friend group's daily LeetCode progress and turns the leaderboard into an anime-style battle narrative — complete with special moves, taunts, and a winner declared every day.
 
@@ -165,7 +165,7 @@ Sets the daily schedule slot for when the bot posts results.
 { "slot": "20:00" }
 ```
 
-Slot must be in `HH:MM` format where `MM` is `00` or `30`.
+Slot must be in `HH:MM` format where `MM` is `00`, `15`, `30`, or `45`.
 
 **Response**: Updated `GuildData` object
 
@@ -175,9 +175,25 @@ Slot must be in `HH:MM` format where `MM` is `00` or `30`.
 
 ---
 
+### Auth Routes — `/api/auth`
+
+---
+
+#### `POST /api/auth/signout`
+Signs the user out — deletes the Redis session and clears the session cookie.
+
+**Auth**: Session cookie (if present)
+
+**Response**
+```json
+{ "detail": "Signed out" }
+```
+
+---
+
 ### Scheduler Route — `/api/schedule`
 
-Protected by a static Bearer token (`SCHEDULER_SECRET`). Intended to be called externally every 30 minutes.
+Protected by a static Bearer token (`SCHEDULER_SECRET`). Intended to be called externally every 15 minutes.
 
 ---
 
@@ -186,7 +202,7 @@ Runs the slot job for the current time — fetches LeetCode progress for all use
 
 **Auth**: `Authorization: Bearer <SCHEDULER_SECRET>`
 
-If no slot is provided in the body, the slot is auto-resolved from the current request time (rounded to nearest `HH:00` or `HH:30`).
+If no slot is provided in the body, the slot is auto-resolved from the current request time (rounded down to nearest 15-minute interval).
 
 **Body** *(optional)*
 ```json
@@ -195,7 +211,7 @@ If no slot is provided in the body, the slot is auto-resolved from the current r
 
 **Response**
 ```json
-{ "slot": { "hh": 20, "mm": 0 } }
+{ "slot": { "hh": "20", "mm": "00" } }
 ```
 
 ---

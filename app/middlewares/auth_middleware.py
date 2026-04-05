@@ -24,37 +24,48 @@ class AuthMiddleware(BaseHTTPMiddleware):
             await SessionManager.get_session(session_id) if session_id else None
         )
 
+        should_clear_cookie = False
+
         if session_data:
             self._set_auth(request, session_id, session_data)
             Logger.info(f"[AUTH] Found existing session: {session_id}")
 
         elif header and header.startswith("Bearer "):
             token = header.split(" ", 1)[1]
-            async with DiscordUser(token) as discord_gateway:
-                user = await discord_gateway.fetch_user()
-                guilds = await discord_gateway.fetch_manageable_guilds()
+            try:
+                async with DiscordUser(token) as discord_gateway:
+                    user = await discord_gateway.fetch_user()
+                    guilds = await discord_gateway.fetch_manageable_guilds()
+            except Exception as e:
+                Logger.error(f"[AUTH] Discord error: {e}")
+                user = None
+                guilds = []
 
-                if user:
-                    session_data = SessionData(
-                        user=user,
-                        guilds=guilds,
-                        token={"access_token": token, "ex": 3600},
-                    )
-                    session_id = await SessionManager.create_session(
-                        session_data, ex=3600
-                    )
-                    self._set_auth(request, session_id, session_data)
-
-                    Logger.info(f"[AUTH] Created new session: {session_id}")
-                else:
-                    self._set_unauth(request)
-                    Logger.warning(f"[AUTH] Invalid token: {token[:10]}...")
+            if user:
+                session_data = SessionData(
+                    user=user,
+                    guilds=guilds,
+                    token={"access_token": token, "ex": 3600},
+                )
+                session_id = await SessionManager.create_session(session_data, ex=3600)
+                self._set_auth(request, session_id, session_data)
+                Logger.info(f"[AUTH] Created new session: {session_id}")
+            else:
+                if session_id:
+                    await SessionManager.delete_session(session_id)
+                    should_clear_cookie = True
+                self._set_unauth(request)
+                Logger.warning(f"[AUTH] Invalid token: {token[:10]}...")
         else:
             self._set_unauth(request)
 
         response = await call_next(request)
 
-        if (
+        if should_clear_cookie:
+            response.delete_cookie(
+                key=self.cookie_name, httponly=True, secure=True, samesite="lax"
+            )
+        elif (
             session_id
             and not request.cookies.get(self.cookie_name)
             and getattr(request.state, "is_authenticated", False)
