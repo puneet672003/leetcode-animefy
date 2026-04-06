@@ -156,7 +156,12 @@ class DiscordBot:
         bot = await cls._get_bot()
         try:
             webhook = await bot.fetch_webhook(int(webhook_id))
-            await webhook.send(content=content, embed=embed)
+            await webhook.send(
+                content=content,
+                embed=embed,
+                username=bot.user.name,
+                avatar_url=bot.user.display_avatar.url,
+            )
         except discord.NotFound:
             raise DiscordClientException("Webhook not found", status_code=404)
         except discord.HTTPException as e:
